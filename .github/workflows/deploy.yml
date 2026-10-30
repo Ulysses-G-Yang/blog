@@ -26,10 +26,18 @@ jobs:
       - name: 构建站点
         uses: withastro/action@v3
 
+      # 手动打包 + overwrite:true,绕开 upload-pages-artifact 的 409 竞态问题
+      - name: 打包构建产物
+        run: tar -cvf artifact.tar -C dist .
+
       - name: 上传构建产物
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          path: dist
+          name: github-pages
+          path: artifact.tar
+          retention-days: 1
+          if-no-files-found: error
+          overwrite: true
 
   deploy:
     needs: build
