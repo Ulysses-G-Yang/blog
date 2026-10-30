@@ -18,16 +18,16 @@
 
 :root {
   color-scheme: light;
-  --bg: #faf8fb;
-  --bg-soft: #f0ecf3;
+  --bg: #ffffff;
+  --bg-soft: #f6f4f8;
   --surface: #ffffff;
-  --border: #e5dfe9;
+  --border: #e8e3ec;
   --text: #241a3a;
   --muted: #6e6580;
-  --accent: #b75a72;
-  --accent-2: #b75a72;
-  --curtain-a: #efe9f2;
-  --curtain-b: #e4dcea;
+  --accent: #c25d76;
+  --accent-2: #c25d76;
+  --curtain-a: #f4eff6;
+  --curtain-b: #eae3ee;
 }
 
 [data-theme='dark'] {
@@ -66,6 +66,19 @@ html {
 body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 顶部玫瑰红细线:全站品牌识别条 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 55;
+  background: var(--accent);
+  pointer-events: none;
 }
 
 ::selection {

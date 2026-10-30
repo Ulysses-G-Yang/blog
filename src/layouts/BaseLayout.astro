@@ -48,9 +48,9 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
     <script is:inline data-astro-rerun>
       // 主题无闪烁初始化:data-astro-rerun 保证每次页面切换后重新执行,
       // 否则 View Transitions 换页时 <html> 的属性会被服务端渲染结果覆盖。
-      // 默认深墨紫主题(参考 codewebbarcelona.com),右上角可切白色。
+      // 默认白色主题打底(Code Barcelona 的排版骨架 + 白底),右上角可切深墨紫。
       (() => {
-        const theme = localStorage.getItem('theme') ?? 'dark';
+        const theme = localStorage.getItem('theme') ?? 'light';
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.add('js');
       })();
