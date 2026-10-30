@@ -1,4 +1,4 @@
-# Yangyue 的技术博客
+# Ulysses Yang 的技术博客
 
 基于 **Astro 5 + TypeScript + Tailwind CSS 4** 的个人技术博客。设计:白底黑字的极简排版,单一蓝色点缀,幕布转场动效(GTA5 官网式渐入),可切暗色。双端部署:GitHub Pages(公网)+ 家庭服务器(局域网镜像 + umami 统计)。
 

@@ -4,11 +4,11 @@
 
 export const SITE = {
   /** 站点名(浏览器标题、页头 Logo、RSS) */
-  title: 'Yangyue 的技术博客',
+  title: 'Ulysses Yang 的技术博客',
   /** 站点描述(SEO / RSS / 分享卡片) */
   description: '一个关于前端、工程化与奇技淫巧的个人技术博客。',
   /** 作者名 */
-  author: 'Yangyue',
+  author: 'Ulysses Yang',
   /** 你的 GitHub 主页(页脚、关于页都会用到) */
   url: 'https://ulysses-g-yang.github.io',
   github: 'https://github.com/Ulysses-G-Yang',
