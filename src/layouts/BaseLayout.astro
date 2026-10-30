@@ -48,13 +48,9 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
     <script is:inline data-astro-rerun>
       // 主题无闪烁初始化:data-astro-rerun 保证每次页面切换后重新执行,
       // 否则 View Transitions 换页时 <html> 的属性会被服务端渲染结果覆盖。
+      // 默认白色主题,右上角按钮可切暗色(选择存在 localStorage)。
       (() => {
-        const saved = localStorage.getItem('theme');
-        const theme =
-          saved ??
-          (window.matchMedia('(prefers-color-scheme: light)').matches
-            ? 'light'
-            : 'dark');
+        const theme = localStorage.getItem('theme') ?? 'light';
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.add('js');
       })();

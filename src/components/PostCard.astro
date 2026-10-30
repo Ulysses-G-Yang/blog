@@ -13,7 +13,7 @@ const { post } = Astro.props;
 
 <article
   data-reveal
-  class="group relative flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_14px_44px_-16px_var(--glow)]"
+  class="group relative flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-text/30 hover:shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]"
 >
   <div class="flex items-center gap-3 text-xs text-muted">
     <FormattedDate date={post.data.pubDate} />
@@ -40,6 +40,6 @@ const { post } = Astro.props;
   </p>
 
   <span
-    class="pointer-events-none absolute inset-x-6 bottom-0 h-px scale-x-0 bg-gradient-to-r from-transparent via-accent to-transparent transition-transform duration-500 group-hover:scale-x-100"
+    class="pointer-events-none absolute inset-x-6 bottom-0 h-px scale-x-0 bg-text/40 transition-transform duration-500 group-hover:scale-x-100"
   ></span>
 </article>
