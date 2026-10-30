@@ -1,0 +1,91 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import TagPill from '../../components/TagPill.astro';
+import TOC from '../../components/TOC.astro';
+import PrevNext from '../../components/PrevNext.astro';
+import Giscus from '../../components/Giscus.astro';
+import { readingMinutes, sortPostsDesc, withBase } from '../../utils/posts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// 上一篇 = 时间上更早的;下一篇 = 时间上更新的
+const sorted = sortPostsDesc(
+  await getCollection('blog', ({ data }) => !data.draft),
+);
+const index = sorted.findIndex((p) => p.id === post.id);
+const prev = index < sorted.length - 1 ? sorted[index + 1] : undefined;
+const next = index > 0 ? sorted[index - 1] : undefined;
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <ReadingProgress />
+  <article data-pagefind-body class="mx-auto max-w-5xl px-5 pt-14 pb-24">
+    <header class="max-w-3xl" data-hero>
+      {
+        post.data.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {post.data.tags.map((tag) => (
+              <TagPill tag={tag} />
+            ))}
+          </div>
+        )
+      }
+      <h1
+        class="mt-4 text-3xl leading-tight font-black tracking-tight sm:text-4xl"
+      >
+        {post.data.title}
+      </h1>
+      <div
+        class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted"
+      >
+        <FormattedDate date={post.data.pubDate} />
+        <span aria-hidden="true">·</span>
+        <span>约 {readingMinutes(post.body)} 分钟</span>
+        {
+          post.data.updatedDate && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                更新于
+                <FormattedDate date={post.data.updatedDate} />
+              </span>
+            </>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="mt-12 flex gap-12">
+      <div class="min-w-0 max-w-3xl flex-1">
+        <div class="prose prose-blog max-w-none">
+          <Content />
+        </div>
+        <PrevNext
+          prev={prev && {
+            title: prev.data.title,
+            href: withBase(`/blog/${prev.id}/`),
+          }}
+          next={next && {
+            title: next.data.title,
+            href: withBase(`/blog/${next.id}/`),
+          }}
+        />
+        <Giscus />
+      </div>
+      <TOC headings={toc} />
+    </div>
+  </article>
+</BaseLayout>

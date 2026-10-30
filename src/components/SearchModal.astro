@@ -1,0 +1,21 @@
+<!-- 全站搜索弹窗:pagefind 资源由全局脚本在首次打开时懒加载 -->
+<dialog id="search-dialog">
+  <div class="p-5">
+    <div class="mb-4 flex items-center justify-between">
+      <span class="text-sm font-bold tracking-wide text-muted">搜索文章</span>
+      <button type="button" data-search-close class="icon-btn text-xs">
+        Esc
+      </button>
+    </div>
+    <div id="pagefind-ui"></div>
+    <p
+      data-search-fallback
+      class="mt-4 hidden rounded-lg bg-bg-soft p-3 text-xs leading-relaxed text-muted"
+    >
+      搜索索引由 pagefind 在构建时生成 —— 开发模式下不可用。
+      请运行
+      <code class="font-mono">npm run build && npm run preview</code>
+      后再试。
+    </p>
+  </div>
+</dialog>

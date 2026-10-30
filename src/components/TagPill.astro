@@ -1,0 +1,18 @@
+---
+import { withBase } from '../utils/posts';
+
+interface Props {
+  tag: string;
+  count?: number;
+}
+
+const { tag, count } = Astro.props;
+---
+
+<a
+  href={withBase(`/tags/${tag}/`)}
+  class="inline-flex items-center gap-1 rounded-full bg-bg-soft px-3 py-1 font-mono text-xs text-muted transition-colors hover:text-accent"
+>
+  #<span>{tag}</span>
+  {count !== undefined && <span class="opacity-60">{count}</span>}
+</a>

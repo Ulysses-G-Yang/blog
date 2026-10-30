@@ -1,0 +1,136 @@
+---
+import { NAV, SITE } from '../config';
+import { withBase } from '../utils/posts';
+
+const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
+const current = normalize(Astro.url.pathname);
+const isActive = (href: string) => {
+  const target = normalize(withBase(href));
+  return target === '/' ? current === '/' : current.startsWith(target);
+};
+---
+
+<header class="glass sticky top-0 z-50">
+  <nav class="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
+    <a
+      href={withBase('/')}
+      class="text-lg font-black tracking-tight transition-opacity hover:opacity-80"
+    >
+      <span class="text-gradient">{SITE.title}</span>
+    </a>
+
+    <!-- 桌面端导航 -->
+    <div class="hidden items-center gap-1 sm:flex">
+      {
+        NAV.map((item) => (
+          <a
+            href={withBase(item.href)}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class:list={[
+              'rounded-full px-3 py-1.5 text-sm transition-colors',
+              isActive(item.href)
+                ? 'bg-bg-soft font-semibold text-text'
+                : 'text-muted hover:text-text',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <button
+        type="button"
+        data-search-open
+        aria-label="搜索文章"
+        class="icon-btn ml-1"
+        title="搜索 (Ctrl+K)"
+      >
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        data-theme-toggle
+        aria-label="切换深浅主题"
+        class="icon-btn"
+      >
+        <svg data-icon="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <svg data-icon="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 移动端 -->
+    <div class="flex items-center gap-1 sm:hidden">
+      <button
+        type="button"
+        data-search-open
+        aria-label="搜索文章"
+        class="icon-btn"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        data-theme-toggle
+        aria-label="切换深浅主题"
+        class="icon-btn"
+      >
+        <svg data-icon="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <svg data-icon="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
+        data-menu-toggle
+        aria-label="打开菜单"
+        class="icon-btn"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 移动端下拉菜单 -->
+  <div id="mobile-menu" class="glass hidden sm:hidden">
+    <div class="mx-auto max-w-5xl px-5 pb-4">
+      {
+        NAV.map((item) => (
+          <a
+            href={withBase(item.href)}
+            class:list={[
+              'block rounded-lg px-3 py-2 text-sm',
+              isActive(item.href)
+                ? 'bg-bg-soft font-semibold text-text'
+                : 'text-muted hover:text-text',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</header>

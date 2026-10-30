@@ -1,0 +1,44 @@
+---
+interface Link {
+  title: string;
+  href: string;
+}
+
+interface Props {
+  prev?: Link;
+  next?: Link;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<nav class="mt-14 grid gap-4 sm:grid-cols-2" data-reveal>
+  {
+    prev ? (
+      <a
+        href={prev.href}
+        class="group flex flex-col gap-1 rounded-2xl border border-border bg-surface p-5 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50"
+      >
+        <span class="text-xs text-muted">← 上一篇</span>
+        <span class="font-semibold transition-colors group-hover:text-accent">
+          {prev.title}
+        </span>
+      </a>
+    ) : (
+      <span />
+    )
+  }
+  {
+    next && (
+      <a
+        href={next.href}
+        class="group flex flex-col items-end gap-1 rounded-2xl border border-border bg-surface p-5 text-right transition-all duration-300 hover:-translate-y-1 hover:border-accent/50"
+      >
+        <span class="text-xs text-muted">下一篇 →</span>
+        <span class="font-semibold transition-colors group-hover:text-accent">
+          {next.title}
+        </span>
+      </a>
+    )
+  }
+</nav>

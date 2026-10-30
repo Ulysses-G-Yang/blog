@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../utils/posts';
+---
+
+<BaseLayout title="404 页面不存在">
+  <section
+    class="mx-auto flex max-w-5xl flex-col items-center px-5 pt-24 pb-32 text-center"
+    data-hero
+  >
+    <p class="text-gradient font-mono text-8xl font-black tracking-tight select-none sm:text-9xl">
+      404
+    </p>
+    <h1 class="mt-8 text-2xl font-bold">页面迷路了</h1>
+    <p class="mt-3 max-w-md text-muted">
+      它可能被移动、删除,或者从来没有存在过。不过没关系,好文章都在下面。
+    </p>
+    <div class="mt-9 flex flex-wrap justify-center gap-3">
+      <a href={withBase('/')} class="btn-primary">回到首页</a>
+      <a href={withBase('/blog/')} class="btn-ghost">浏览文章</a>
+    </div>
+  </section>
+</BaseLayout>

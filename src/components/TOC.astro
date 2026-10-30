@@ -1,0 +1,35 @@
+---
+interface Heading {
+  depth: number;
+  text: string;
+  slug: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <nav class="hidden w-56 shrink-0 xl:block">
+      <div class="sticky top-24 text-sm">
+        <p class="mb-3 font-semibold text-muted">目录</p>
+        <ul class="space-y-2 border-l border-border">
+          {headings.map((heading) => (
+            <li class:list={[heading.depth === 3 && 'pl-4']}>
+              <a
+                href={`#${heading.slug}`}
+                class="block text-muted transition-colors hover:text-accent"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  )
+}

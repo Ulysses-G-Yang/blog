@@ -1,0 +1,39 @@
+---
+import { SITE } from '../config';
+import { withBase } from '../utils/posts';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border">
+  <div
+    class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-muted sm:flex-row"
+  >
+    <p>
+      © {year}
+      {SITE.author} · 由
+      <a
+        href="https://astro.build"
+        target="_blank"
+        rel="noopener"
+        class="transition-colors hover:text-accent">Astro</a
+      > 强力驱动
+    </p>
+    <div class="flex items-center gap-5">
+      <a
+        href={SITE.github}
+        target="_blank"
+        rel="noopener"
+        class="transition-colors hover:text-accent">GitHub</a
+      >
+      <a href={withBase('/feed.xml')} class="transition-colors hover:text-accent"
+        >RSS</a
+      >
+      <button
+        type="button"
+        data-search-open
+        class="cursor-pointer transition-colors hover:text-accent">搜索</button
+      >
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllTags, sortPostsDesc, withBase } from '../../utils/posts';
+
+const posts = sortPostsDesc(
+  await getCollection('blog', ({ data }) => !data.draft),
+);
+const tags = getAllTags(posts);
+---
+
+<BaseLayout title="标签" description="按标签浏览全部文章">
+  <section class="mx-auto max-w-5xl px-5 pt-16 pb-16" data-hero>
+    <p class="font-mono text-sm text-accent">// tags</p>
+    <h1 class="mt-3 text-4xl font-black tracking-tight">标签</h1>
+    <p class="mt-4 text-muted">共 {tags.length} 个标签。</p>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-5 pb-24" data-reveal>
+    <div class="flex flex-wrap gap-3">
+      {
+        tags.map(({ tag, count }) => (
+          <a
+            href={withBase(`/tags/${tag}/`)}
+            class="group flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-3 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50"
+          >
+            <span class="font-mono font-semibold transition-colors group-hover:text-accent">
+              # {tag}
+            </span>
+            <span class="rounded-full bg-bg-soft px-2 py-0.5 text-xs text-muted">
+              {count}
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

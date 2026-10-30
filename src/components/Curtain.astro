@@ -1,0 +1,14 @@
+---
+import { SITE } from '../config';
+---
+
+<!-- 幕布转场层:5 块帘片 + 站名 logo。transition:persist 保证换页时这一层不被销毁。 -->
+
+<div id="curtain" class="curtain" transition:persist="curtain" aria-hidden="true">
+  <div class="curtain-panel"></div>
+  <div class="curtain-panel"></div>
+  <div class="curtain-panel"></div>
+  <div class="curtain-panel"></div>
+  <div class="curtain-panel"></div>
+  <div class="curtain-logo">{SITE.title}</div>
+</div>

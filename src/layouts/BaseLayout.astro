@@ -1,0 +1,345 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { SITE, UMAMI } from '../config';
+import { BASE, withBase } from '../utils/posts';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Curtain from '../components/Curtain.astro';
+import SearchModal from '../components/SearchModal.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = SITE.description } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href={withBase('/feed.xml')}
+    />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+    {
+      UMAMI.src && UMAMI.websiteId && (
+        <script is:inline defer src={UMAMI.src} data-website-id={UMAMI.websiteId} />
+      )
+    }
+    <script is:inline data-astro-rerun>
+      // 主题无闪烁初始化:data-astro-rerun 保证每次页面切换后重新执行,
+      // 否则 View Transitions 换页时 <html> 的属性会被服务端渲染结果覆盖。
+      (() => {
+        const saved = localStorage.getItem('theme');
+        const theme =
+          saved ??
+          (window.matchMedia('(prefers-color-scheme: light)').matches
+            ? 'light'
+            : 'dark');
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.add('js');
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body class="flex min-h-screen flex-col bg-bg font-sans text-text antialiased">
+    <div class="atmosphere" aria-hidden="true"></div>
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <Curtain />
+    <SearchModal />
+
+    <script>
+      // ============================================================
+      // 全站动效与交互引导脚本
+      // 模块脚本全站只执行一次;换页后通过 astro:page-load 重新初始化 DOM 相关逻辑。
+      // ============================================================
+      import { gsap } from 'gsap';
+
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+
+      /* ---------------- 幕布转场 ----------------
+         原则:动画故障绝不能卡住导航 —— 所有阶段先用 killTweensOf 清场,
+         Router 的 loader 等待落幕时有 1.2s 超时兜底。 */
+      const curtain = document.getElementById('curtain');
+      const panels = curtain
+        ? [...curtain.querySelectorAll<HTMLElement>('.curtain-panel')]
+        : [];
+      const logo = curtain?.querySelector<HTMLElement>('.curtain-logo') ?? null;
+      const wait = (ms: number) =>
+        new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+      /** 落幕:帘片依次落下遮住屏幕 */
+      function curtainIn(): Promise<void> {
+        if (!curtain) return Promise.resolve();
+        curtain.classList.add('is-animating');
+        if (reduceMotion) return Promise.resolve();
+        gsap.killTweensOf([...panels, logo!]);
+        return gsap
+          .timeline()
+          .set(panels, { yPercent: -101 })
+          .to(panels, {
+            yPercent: 0,
+            duration: 0.42,
+            ease: 'power3.inOut',
+            stagger: 0.05,
+          })
+          .to(logo, { opacity: 1, duration: 0.22 }, '-=0.15')
+          .then();
+      }
+
+      /** 揭幕:logo 隐去,帘片继续向下穿出屏幕 */
+      function curtainOut(): void {
+        if (!curtain) return;
+        if (reduceMotion) {
+          curtain.classList.remove('is-animating');
+          return;
+        }
+        gsap.killTweensOf([...panels, logo!]);
+        gsap
+          .timeline({
+            onComplete: () => curtain.classList.remove('is-animating'),
+          })
+          .to(logo, { opacity: 0, duration: 0.16 })
+          .to(
+            panels,
+            {
+              yPercent: 101,
+              duration: 0.6,
+              ease: 'power4.inOut',
+              stagger: 0.05,
+            },
+            '<0.04',
+          );
+      }
+
+      // 首次进入:落幕后拉开(GTA 式入场);之后的导航由 Router 事件接管
+      curtainIn().then(() => curtainOut());
+
+      document.addEventListener('astro:before-preparation', (event) => {
+        // 覆盖 Router 的 loader:先落幕,再加载新页面,避免换页闪白
+        const originalLoader = (event as any).loader as () => Promise<void>;
+        (event as any).loader = async () => {
+          await Promise.race([curtainIn(), wait(1200)]);
+          await originalLoader.call(event);
+        };
+      });
+
+      /* ---------------- 每页初始化 ---------------- */
+      let progressHandler: (() => void) | null = null;
+
+      function syncGiscusTheme(): void {
+        const frame = document.querySelector<HTMLIFrameElement>(
+          'iframe.giscus-frame',
+        );
+        const theme =
+          document.documentElement.dataset.theme === 'dark'
+            ? 'transparent_dark'
+            : 'light';
+        frame?.contentWindow?.postMessage(
+          { giscus: { setConfig: { theme } } },
+          'https://giscus.app',
+        );
+      }
+
+      function initPage(): void {
+        // Hero 逐段渐入(staggered + 微模糊,幕布拉开后才开始)
+        const hero = document.querySelector<HTMLElement>('[data-hero]');
+        if (hero && !reduceMotion) {
+          gsap.fromTo(
+            hero.children,
+            { opacity: 0, y: 36, filter: 'blur(8px)' },
+            {
+              opacity: 1,
+              y: 0,
+              filter: 'blur(0px)',
+              duration: 0.9,
+              ease: 'power3.out',
+              stagger: 0.09,
+              delay: 0.1,
+              clearProps: 'filter,transform',
+              overwrite: 'auto',
+            },
+          );
+        }
+
+        // 滚动浮现:进入视口的 [data-reveal] 元素依次上浮点亮
+        const revealEls = [
+          ...document.querySelectorAll<HTMLElement>('[data-reveal]'),
+        ];
+        if (revealEls.length && !reduceMotion) {
+          const io = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                gsap.to(entry.target, {
+                  opacity: 1,
+                  y: 0,
+                  duration: 0.8,
+                  ease: 'power3.out',
+                  clearProps: 'transform',
+                });
+                io.unobserve(entry.target);
+              }
+            },
+            { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+          );
+          revealEls.forEach((el) => io.observe(el));
+        } else {
+          revealEls.forEach((el) => {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+          });
+        }
+
+        // 阅读进度条
+        const bar = document.getElementById('reading-progress');
+        if (bar) {
+          if (progressHandler) {
+            window.removeEventListener('scroll', progressHandler);
+          }
+          progressHandler = () => {
+            const el = document.documentElement;
+            const max = el.scrollHeight - el.clientHeight;
+            bar.style.transform = `scaleX(${max > 0 ? el.scrollTop / max : 0})`;
+          };
+          progressHandler();
+          window.addEventListener('scroll', progressHandler, {
+            passive: true,
+          });
+        }
+
+        syncGiscusTheme();
+      }
+
+      document.addEventListener('astro:page-load', () => {
+        curtainOut();
+        initPage();
+      });
+
+      /* ---------------- 主题切换(事件委托,换页不失效) ---------------- */
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const toggle = target.closest<HTMLElement>('[data-theme-toggle]');
+        if (toggle) {
+          const next =
+            document.documentElement.dataset.theme === 'dark'
+              ? 'light'
+              : 'dark';
+          document.documentElement.dataset.theme = next;
+          localStorage.setItem('theme', next);
+          syncGiscusTheme();
+          return;
+        }
+        const menuToggle = target.closest<HTMLElement>('[data-menu-toggle]');
+        if (menuToggle) {
+          document.getElementById('mobile-menu')?.classList.toggle('hidden');
+        }
+      });
+
+      /* ---------------- 搜索弹窗 + pagefind 懒加载 ----------------
+         注意:换页会替换 body,弹窗元素会重建,
+         所以每次交互都要实时查询,绝不能缓存元素引用。 */
+      const getSearchDialog = () =>
+        document.getElementById(
+          'search-dialog',
+        ) as HTMLDialogElement | null;
+      let pagefindReady = false;
+      // BASE_URL 在客户端可能没有尾部斜杠(如 /blog),必须归一化
+      const siteBase = import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL
+        : `${import.meta.env.BASE_URL}/`;
+
+      function mountPagefindUi(): void {
+        const container = document.getElementById('pagefind-ui');
+        if (!container || container.childElementCount > 0) return;
+        const PagefindUI = (window as any).PagefindUI;
+        if (!PagefindUI) return;
+        new PagefindUI({
+          element: '#pagefind-ui',
+          showSubResults: true,
+          showImages: false,
+        });
+      }
+
+      async function ensurePagefind(): Promise<void> {
+        if (pagefindReady) {
+          mountPagefindUi();
+          return;
+        }
+        try {
+          await Promise.all([
+            new Promise<void>((resolve, reject) => {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = `${siteBase}pagefind/pagefind-ui.css`;
+              link.onload = () => resolve();
+              link.onerror = () => reject(new Error('pagefind css 未找到'));
+              document.head.append(link);
+            }),
+            new Promise<void>((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = `${siteBase}pagefind/pagefind-ui.js`;
+              script.onload = () => resolve();
+              script.onerror = () => reject(new Error('pagefind js 未找到'));
+              document.body.append(script);
+            }),
+          ]);
+          pagefindReady = true;
+          mountPagefindUi();
+        } catch {
+          document
+            .querySelector('[data-search-fallback]')
+            ?.classList.remove('hidden');
+        }
+      }
+
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const dlg = getSearchDialog();
+        if (target.closest('[data-search-open]') && dlg && !dlg.open) {
+          dlg.showModal();
+          void ensurePagefind();
+        } else if (target.closest('[data-search-close]') && dlg?.open) {
+          dlg.close();
+        } else if (dlg && dlg.open && event.target === dlg) {
+          dlg.close(); // 点击遮罩区域关闭
+        }
+      });
+      document.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+          event.preventDefault();
+          const dlg = getSearchDialog();
+          if (dlg && !dlg.open) {
+            dlg.showModal();
+            void ensurePagefind();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

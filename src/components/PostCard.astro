@@ -1,0 +1,45 @@
+---
+import type { Post } from '../utils/posts';
+import { withBase } from '../utils/posts';
+import FormattedDate from './FormattedDate.astro';
+import TagPill from './TagPill.astro';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+---
+
+<article
+  data-reveal
+  class="group relative flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-[0_14px_44px_-16px_var(--glow)]"
+>
+  <div class="flex items-center gap-3 text-xs text-muted">
+    <FormattedDate date={post.data.pubDate} />
+    {
+      post.data.tags.slice(0, 2).map((tag) => (
+        <span class="transition-colors group-hover:text-accent">
+          <TagPill tag={tag} />
+        </span>
+      ))
+    }
+  </div>
+
+  <h3 class="mt-3 text-lg leading-snug font-semibold">
+    <a
+      href={withBase(`/blog/${post.id}/`)}
+      class="transition-colors group-hover:text-accent"
+    >
+      {post.data.title}
+    </a>
+  </h3>
+
+  <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
+    {post.data.description}
+  </p>
+
+  <span
+    class="pointer-events-none absolute inset-x-6 bottom-0 h-px scale-x-0 bg-gradient-to-r from-transparent via-accent to-transparent transition-transform duration-500 group-hover:scale-x-100"
+  ></span>
+</article>
