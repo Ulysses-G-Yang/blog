@@ -10,8 +10,8 @@ export const SITE = {
   /** 作者名 */
   author: 'Yangyue',
   /** 你的 GitHub 主页(页脚、关于页都会用到) */
-  url: 'https://3023345758.github.io',
-  github: 'https://github.com/3023345758',
+  url: 'https://ulysses-g-yang.github.io',
+  github: 'https://github.com/Ulysses-G-Yang',
   /** 联系邮箱(展示在关于页,不需要可留空) */
   email: '3023345758@qq.com',
 };
@@ -22,7 +22,7 @@ export const SITE = {
  * 任一项为空 = 评论功能关闭,页面不报错。
  */
 export const GISCUS = {
-  repo: '3023345758/blog', // 公开仓库,需在仓库设置里开启 Discussions
+  repo: 'Ulysses-G-Yang/blog', // 公开仓库,需在仓库设置里开启 Discussions
   repoId: '', // giscus.app 生成后填入
   category: 'Announcements',
   categoryId: '', // giscus.app 生成后填入

@@ -73,7 +73,7 @@ deploy/                    # 家庭服务器部署(docker-compose + nginx + 同�
 ### GitHub Pages(公网,自动)
 
 推送到 `main` → Actions 构建(`.github/workflows/deploy.yml`)→ 发布 Pages。
-线上地址:`https://3023345758.github.io/blog/`
+线上地址:`https://ulysses-g-yang.github.io/blog/`
 
 ### 家庭服务器(局域网镜像 + umami)
 

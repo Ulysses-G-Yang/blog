@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
     working_dir: /repo
     environment:
-      REPO_URL: https://github.com/3023345758/blog.git
+      REPO_URL: https://github.com/Ulysses-G-Yang/blog.git
       BRANCH: main
       INTERVAL: '300' # 同步间隔(秒)
     volumes:
