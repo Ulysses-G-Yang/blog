@@ -48,9 +48,9 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
     <script is:inline data-astro-rerun>
       // 主题无闪烁初始化:data-astro-rerun 保证每次页面切换后重新执行,
       // 否则 View Transitions 换页时 <html> 的属性会被服务端渲染结果覆盖。
-      // 默认白色主题,右上角按钮可切暗色(选择存在 localStorage)。
+      // 默认深墨紫主题(参考 codewebbarcelona.com),右上角可切白色。
       (() => {
-        const theme = localStorage.getItem('theme') ?? 'light';
+        const theme = localStorage.getItem('theme') ?? 'dark';
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.add('js');
       })();
@@ -133,14 +133,18 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
           );
       }
 
-      // 首次进入:落幕后拉开(GTA 式入场);之后的导航由 Router 事件接管
-      curtainIn().then(() => curtainOut());
+      // 幕布每个浏览器会话只播一次(老师反馈:高频转场动画会审美疲劳)。
+      // 首次进入:落幕后拉开 + hero 逐段渐入;之后的换页走原生淡入,不再播动画。
+      const PLAYED_KEY = 'curtain-played';
+      const shouldPlayIntro = !sessionStorage.getItem(PLAYED_KEY);
+      if (shouldPlayIntro) curtainIn().then(() => curtainOut());
 
       document.addEventListener('astro:before-preparation', (event) => {
-        // 覆盖 Router 的 loader:先落幕,再加载新页面,避免换页闪白
         const originalLoader = (event as any).loader as () => Promise<void>;
         (event as any).loader = async () => {
-          await Promise.race([curtainIn(), wait(1200)]);
+          if (!sessionStorage.getItem(PLAYED_KEY)) {
+            await Promise.race([curtainIn(), wait(1200)]);
+          }
           await originalLoader.call(event);
         };
       });
@@ -162,10 +166,10 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
         );
       }
 
-      function initPage(): void {
-        // Hero 逐段渐入(staggered + 微模糊,幕布拉开后才开始)
+      function initPage(heroStagger: boolean): void {
+        // Hero 逐段渐入:只在会话第一次进入时播放(强叔方案:首次惊艳,之后无感)
         const hero = document.querySelector<HTMLElement>('[data-hero]');
-        if (hero && !reduceMotion) {
+        if (hero && !reduceMotion && heroStagger) {
           gsap.fromTo(
             hero.children,
             { opacity: 0, y: 36, filter: 'blur(8px)' },
@@ -181,6 +185,8 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
               overwrite: 'auto',
             },
           );
+        } else if (hero) {
+          gsap.set(hero.children, { opacity: 1, y: 0, filter: 'none' });
         }
 
         // 滚动浮现:进入视口的 [data-reveal] 元素依次上浮点亮
@@ -233,8 +239,17 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
       }
 
       document.addEventListener('astro:page-load', () => {
-        curtainOut();
-        initPage();
+        // 会话内的第一次 page-load:揭幕 + hero 入场;之后的换页只做轻量初始化
+        const isFirstPageOfSession =
+          shouldPlayIntro && !sessionStorage.getItem(PLAYED_KEY);
+        if (isFirstPageOfSession) {
+          sessionStorage.setItem(PLAYED_KEY, '1');
+          curtainOut();
+          initPage(true);
+        } else {
+          curtain?.classList.remove('is-animating');
+          initPage(false);
+        }
       });
 
       /* ---------------- 主题切换(事件委托,换页不失效) ---------------- */

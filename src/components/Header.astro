@@ -27,9 +27,9 @@ const isActive = (href: string) => {
             href={withBase(item.href)}
             aria-current={isActive(item.href) ? 'page' : undefined}
             class:list={[
-              'rounded-full px-3 py-1.5 text-sm transition-colors',
+              'label-mono px-2.5 py-1 transition-colors',
               isActive(item.href)
-                ? 'bg-bg-soft font-semibold text-text'
+                ? 'font-semibold text-accent'
                 : 'text-muted hover:text-text',
             ]}
           >
@@ -121,9 +121,9 @@ const isActive = (href: string) => {
           <a
             href={withBase(item.href)}
             class:list={[
-              'block rounded-lg px-3 py-2 text-sm',
+              'block rounded-lg px-3 py-2 label-mono',
               isActive(item.href)
-                ? 'bg-bg-soft font-semibold text-text'
+                ? 'font-semibold text-accent'
                 : 'text-muted hover:text-text',
             ]}
           >

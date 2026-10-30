@@ -18,30 +18,30 @@
 
 :root {
   color-scheme: light;
-  --bg: #ffffff;
-  --bg-soft: #f5f5f3;
+  --bg: #faf8fb;
+  --bg-soft: #f0ecf3;
   --surface: #ffffff;
-  --border: #e6e6e3;
-  --text: #1c1c1a;
-  --muted: #70706b;
-  --accent: #0969da;
-  --accent-2: #0969da;
-  --curtain-a: #f2f2ef;
-  --curtain-b: #e9e9e6;
+  --border: #e5dfe9;
+  --text: #241a3a;
+  --muted: #6e6580;
+  --accent: #b75a72;
+  --accent-2: #b75a72;
+  --curtain-a: #efe9f2;
+  --curtain-b: #e4dcea;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #101013;
-  --bg-soft: #1a1a1e;
-  --surface: #17171b;
-  --border: #2b2b30;
-  --text: #e8e8e5;
-  --muted: #9c9c96;
-  --accent: #6cb0ff;
-  --accent-2: #6cb0ff;
-  --curtain-a: #222226;
-  --curtain-b: #17171b;
+  --bg: #1b1233;
+  --bg-soft: #241942;
+  --surface: #201539;
+  --border: rgba(255, 255, 255, 0.13);
+  --text: #f3eff9;
+  --muted: #a89fc0;
+  --accent: #d4738a;
+  --accent-2: #e78ea1;
+  --curtain-a: #251a44;
+  --curtain-b: #170f2b;
 }
 
 @theme inline {
@@ -109,24 +109,51 @@ body {
    按钮
    ============================================================ */
 
+/* 按钮参考 Code Barcelona:细边框 + 等宽大写小字,主按钮悬停填充玫瑰红 */
 .btn-primary {
-  @apply inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold transition-transform duration-200;
-  background: var(--text);
-  color: var(--bg);
+  @apply inline-flex items-center gap-1.5 rounded-full border px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.15em] transition-colors duration-200;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .btn-primary:hover {
-  transform: translateY(-2px);
-}
-.btn-primary:active {
-  transform: translateY(0);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .btn-ghost {
-  @apply inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-text transition-colors duration-200;
+  @apply inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.15em] text-muted transition-colors duration-200;
 }
 .btn-ghost:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  color: var(--accent);
+  border-color: var(--text);
+  color: var(--text);
+}
+
+/* 巨型跑马灯文字(参考站招牌元素) */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marquee 32s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* 等宽大写小标签(导航/统计/文章信息的统一风格) */
+.label-mono {
+  @apply font-mono text-xs uppercase tracking-[0.2em];
 }
 
 .icon-btn {
