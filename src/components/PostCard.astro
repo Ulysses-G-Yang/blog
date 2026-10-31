@@ -1,6 +1,6 @@
 ---
 import type { Post } from '../utils/posts';
-import { withBase } from '../utils/posts';
+import { categoryLabel, withBase } from '../utils/posts';
 import FormattedDate from './FormattedDate.astro';
 import TagPill from './TagPill.astro';
 
@@ -17,6 +17,7 @@ const { post } = Astro.props;
 >
   <div class="flex items-center gap-3 text-xs text-muted">
     <FormattedDate date={post.data.pubDate} />
+    <span class="label-mono text-accent">{categoryLabel(post.data.category)}</span>
     {
       post.data.tags.slice(0, 2).map((tag) => (
         <span class="transition-colors group-hover:text-accent">

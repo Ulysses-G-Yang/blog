@@ -16,6 +16,8 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     /** 最近修改(可选) */
     updatedDate: z.coerce.date().optional(),
+    /** 板块:tech = 技术分享,essay = 杂谈随笔 */
+    category: z.enum(['tech', 'essay']).default('tech'),
     /** 标签 */
     tags: z.array(z.string()).default([]),
     /** 草稿:true 时不会发布 */

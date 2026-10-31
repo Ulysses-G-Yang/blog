@@ -18,6 +18,17 @@ export const sortPostsDesc = (posts: Post[]): Post[] =>
     (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
   );
 
+/** 板块定义:key 对应 frontmatter 的 category 字段 */
+export const CATEGORIES = [
+  { key: 'tech', label: '技术分享' },
+  { key: 'essay', label: '杂谈随笔' },
+] as const;
+
+export type CategoryKey = (typeof CATEGORIES)[number]['key'];
+
+export const categoryLabel = (key: string): string =>
+  CATEGORIES.find((c) => c.key === key)?.label ?? key;
+
 /** 汇总所有标签及出现次数(按次数从多到少) */
 export const getAllTags = (
   posts: Post[],
