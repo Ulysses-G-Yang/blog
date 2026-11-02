@@ -44,7 +44,7 @@ export const UMAMI = {
  * 把它给的 beacon 脚本里的 token 填进来。留空 = 不启用。
  */
 export const ANALYTICS = {
-  cloudflareToken: '',
+  cloudflareToken: '6fb3dd2d1f9747d2bfbb405db0b9af88',
 };
 
 /** 导航栏(顺序即展示顺序) */
