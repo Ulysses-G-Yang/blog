@@ -23,9 +23,9 @@ export const SITE = {
  */
 export const GISCUS = {
   repo: 'Ulysses-G-Yang/blog', // 公开仓库,需在仓库设置里开启 Discussions
-  repoId: '', // giscus.app 生成后填入
+  repoId: 'R_kgDOVc-fLw', // 通过 GitHub GraphQL API 查询获得
   category: 'Announcements',
-  categoryId: '', // giscus.app 生成后填入
+  categoryId: 'DIC_kwDOVc-fL84DKNXZ', // Announcements 分类(仅管理员可发起,读者可回复)
 };
 
 /**
