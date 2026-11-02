@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import { SITE, UMAMI } from '../config';
+import { SITE, UMAMI, ANALYTICS } from '../config';
 import { BASE, withBase } from '../utils/posts';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
@@ -43,6 +43,16 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
     {
       UMAMI.src && UMAMI.websiteId && (
         <script is:inline defer src={UMAMI.src} data-website-id={UMAMI.websiteId} />
+      )
+    }
+    {
+      ANALYTICS.cloudflareToken && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: ANALYTICS.cloudflareToken })}
+        />
       )
     }
     <script is:inline data-astro-rerun>
@@ -235,8 +245,104 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
           });
         }
 
+        // 阅读体验增强:复制按钮注入 + 目录滚动高亮
+        enhanceReading();
+
         syncGiscusTheme();
       }
+
+      /* ---------------- 阅读体验增强 ---------------- */
+      function enhanceReading(): void {
+        // 1) 代码块复制按钮(已有按钮的跳过,防止重复注入)
+        document.querySelectorAll<HTMLElement>('.astro-code').forEach((pre) => {
+          if (pre.querySelector('.copy-btn')) return;
+          const btn = document.createElement('button');
+          btn.className = 'copy-btn';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          pre.appendChild(btn);
+        });
+
+        // 2) TOC 滚动高亮:当前阅读的小节在目录里点亮
+        const toc = document.getElementById('toc');
+        if (toc) {
+          const links = [
+            ...toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'),
+          ];
+          const pairs: { link: HTMLAnchorElement; heading: HTMLElement }[] = [];
+          for (const link of links) {
+            const id = decodeURIComponent(
+              (link.getAttribute('href') ?? '').slice(1),
+            );
+            const heading = document.getElementById(id);
+            if (heading) pairs.push({ link, heading });
+          }
+          if (pairs.length && !reduceMotion) {
+            const spy = new IntersectionObserver(
+              (entries) => {
+                for (const entry of entries) {
+                  if (!entry.isIntersecting) continue;
+                  for (const { link } of pairs) {
+                    link.classList.remove('toc-active');
+                  }
+                  const hit = pairs.find(
+                    (p) => p.heading === entry.target,
+                  );
+                  hit?.link.classList.add('toc-active');
+                }
+              },
+              { rootMargin: '-15% 0px -70% 0px' },
+            );
+            pairs.forEach(({ heading }) => spy.observe(heading));
+          } else if (pairs.length) {
+            pairs[0].link.classList.add('toc-active');
+          }
+        }
+      }
+
+      // 复制按钮与图片灯箱:事件委托,换页不失效
+      document.addEventListener('click', async (event) => {
+        const target = event.target as HTMLElement;
+
+        const btn = target.closest<HTMLButtonElement>('.copy-btn');
+        if (btn) {
+          const code = btn.parentElement?.querySelector('code');
+          const text = code?.innerText ?? '';
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.textContent = '已复制';
+          } catch {
+            btn.textContent = '复制失败';
+          }
+          setTimeout(() => (btn.textContent = '复制'), 1600);
+          return;
+        }
+
+        const img = target.closest<HTMLImageElement>('.prose-blog img');
+        if (img) {
+          let box = document.getElementById('lightbox');
+          if (!box) {
+            box = document.createElement('div');
+            box.id = 'lightbox';
+            box.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(box);
+            box.addEventListener('click', () => box!.classList.remove('open'));
+          }
+          box.innerHTML = '';
+          const view = document.createElement('img');
+          view.src = img.src;
+          view.alt = img.alt;
+          box.appendChild(view);
+          box.classList.add('open');
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          document.getElementById('lightbox')?.classList.remove('open');
+        }
+      });
 
       document.addEventListener('astro:page-load', () => {
         // 会话内的第一次 page-load:揭幕 + hero 入场;之后的换页只做轻量初始化

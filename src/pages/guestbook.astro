@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GiscusInline from '../components/GiscusInline.astro';
+---
+
+<BaseLayout title="留言板" description="路过的朋友,留个脚印再走吧">
+  <section class="mx-auto max-w-3xl px-5 pt-16 pb-24">
+    <div data-hero>
+      <p class="label-mono text-accent">// guestbook</p>
+      <h1 class="mt-3 text-4xl font-black tracking-tight">留言板</h1>
+      <p class="mt-5 leading-relaxed text-muted">
+        路过的朋友,留个脚印再走吧。技术问题、随手吐槽、问个好看——都可以。
+        评论基于 GitHub Discussions,数据存在仓库里,永不过期。
+      </p>
+    </div>
+
+    <div class="mt-12" data-reveal>
+      <GiscusInline />
+    </div>
+  </section>
+</BaseLayout>

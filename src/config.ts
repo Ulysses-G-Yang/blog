@@ -38,10 +38,21 @@ export const UMAMI = {
   websiteId: '', // umami 后台添加网站后生成
 };
 
+/**
+ * Cloudflare Web Analytics:公网访客统计(免费、无 Cookie、不需要服务器)。
+ * 到 https://dash.cloudflare.com → Web Analytics 添加站点,
+ * 把它给的 beacon 脚本里的 token 填进来。留空 = 不启用。
+ */
+export const ANALYTICS = {
+  cloudflareToken: '',
+};
+
 /** 导航栏(顺序即展示顺序) */
 export const NAV = [
   { href: '/', label: '首页' },
   { href: '/blog/', label: '博客' },
+  { href: '/projects/', label: '项目' },
+  { href: '/guestbook/', label: '留言板' },
   { href: '/tags/', label: '标签' },
   { href: '/archive/', label: '归档' },
   { href: '/about/', label: '关于' },

@@ -19,15 +19,27 @@ const year = new Date().getFullYear();
         class="transition-colors hover:text-accent">Astro</a
       > 强力驱动
     </p>
-    <div class="flex items-center gap-5">
+    <div class="flex flex-wrap items-center justify-center gap-5">
+      <a href={withBase('/projects/')} class="transition-colors hover:text-accent"
+        >项目</a
+      >
+      <a href={withBase('/guestbook/')} class="transition-colors hover:text-accent"
+        >留言板</a
+      >
+      <a href={withBase('/links/')} class="transition-colors hover:text-accent"
+        >友链</a
+      >
+      <a href={withBase('/contribute/')} class="transition-colors hover:text-accent"
+        >投稿</a
+      >
+      <a href={withBase('/feed.xml')} class="transition-colors hover:text-accent"
+        >RSS</a
+      >
       <a
         href={SITE.github}
         target="_blank"
         rel="noopener"
         class="transition-colors hover:text-accent">GitHub</a
-      >
-      <a href={withBase('/feed.xml')} class="transition-colors hover:text-accent"
-        >RSS</a
       >
       <button
         type="button"

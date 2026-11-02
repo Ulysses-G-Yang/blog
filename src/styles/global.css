@@ -329,6 +329,81 @@ html.js [data-hero] > * {
 }
 
 /* ============================================================
+   阅读体验三件套:复制按钮 / 图片灯箱 / 目录高亮
+   ============================================================ */
+
+.astro-code {
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.astro-code:hover .copy-btn,
+.copy-btn:focus-visible {
+  opacity: 1;
+}
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+@media (hover: none) {
+  /* 触屏设备常显,否则没法点 */
+  .copy-btn {
+    opacity: 1;
+  }
+}
+
+#lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(12, 8, 22, 0.86);
+  backdrop-filter: blur(6px);
+  cursor: zoom-out;
+}
+#lightbox.open {
+  display: flex;
+}
+#lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.8rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.toc-link {
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    padding-left 0.2s;
+}
+.toc-link.toc-active {
+  color: var(--accent);
+  padding-left: 0.4rem;
+  border-left: 2px solid var(--accent);
+}
+
+/* ============================================================
    pagefind 搜索 UI 主题对接
    ============================================================ */
 

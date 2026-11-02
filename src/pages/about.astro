@@ -81,5 +81,15 @@ const skills = [
         <a href={`mailto:${SITE.email}`} class="btn-ghost">Email</a>
       </div>
     </div>
+
+    <div class="mt-12" data-reveal>
+      <h2 class="text-lg font-bold">站内导航</h2>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href={withBase('/projects/')} class="btn-ghost">项目展示</a>
+        <a href={withBase('/guestbook/')} class="btn-ghost">留言板</a>
+        <a href={withBase('/links/')} class="btn-ghost">友链</a>
+        <a href={withBase('/contribute/')} class="btn-ghost">投稿指南</a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
