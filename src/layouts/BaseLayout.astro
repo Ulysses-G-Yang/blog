@@ -63,8 +63,9 @@ const ogImage =
       // 主题无闪烁初始化:data-astro-rerun 保证每次页面切换后重新执行,
       // 否则 View Transitions 换页时 <html> 的属性会被服务端渲染结果覆盖。
       // 默认白色主题打底(Code Barcelona 的排版骨架 + 白底),右上角可切深墨紫。
+      // 存储键用 theme-v2:旧的 theme 键里可能存着历史偏好,换键让所有人回到新默认。
       (() => {
-        const theme = localStorage.getItem('theme') ?? 'light';
+        const theme = localStorage.getItem('theme-v2') ?? 'light';
         document.documentElement.dataset.theme = theme;
         document.documentElement.classList.add('js');
       })();
@@ -511,7 +512,7 @@ const ogImage =
               ? 'light'
               : 'dark';
           document.documentElement.dataset.theme = next;
-          localStorage.setItem('theme', next);
+          localStorage.setItem('theme-v2', next);
           syncGiscusTheme();
           return;
         }
