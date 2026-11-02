@@ -143,16 +143,20 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
           );
       }
 
-      // 幕布每个浏览器会话只播一次(老师反馈:高频转场动画会审美疲劳)。
-      // 首次进入:落幕后拉开 + hero 逐段渐入;之后的换页走原生淡入,不再播动画。
-      const PLAYED_KEY = 'curtain-played';
-      const shouldPlayIntro = !sessionStorage.getItem(PLAYED_KEY);
-      if (shouldPlayIntro) curtainIn().then(() => curtainOut());
+      // 转场纪律(强叔反馈迭代版):
+      // 1) 打开网站:不播幕布,只走独立入场动画(hero 逐段浮现)
+      // 2) 会话内第一次切页:幕布登场,只此一次
+      // 3) 之后的换页:归于平静(原生淡入)
+      const USED_KEY = 'curtain-used';
+      let booted = false; // 是否已走完首屏
+      let curtainPlaying = false; // 本次导航是否在播幕布
 
       document.addEventListener('astro:before-preparation', (event) => {
         const originalLoader = (event as any).loader as () => Promise<void>;
         (event as any).loader = async () => {
-          if (!sessionStorage.getItem(PLAYED_KEY)) {
+          if (!sessionStorage.getItem(USED_KEY) && !reduceMotion) {
+            sessionStorage.setItem(USED_KEY, '1');
+            curtainPlaying = true;
             await Promise.race([curtainIn(), wait(1200)]);
           }
           await originalLoader.call(event);
@@ -345,17 +349,19 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
       });
 
       document.addEventListener('astro:page-load', () => {
-        // 会话内的第一次 page-load:揭幕 + hero 入场;之后的换页只做轻量初始化
-        const isFirstPageOfSession =
-          shouldPlayIntro && !sessionStorage.getItem(PLAYED_KEY);
-        if (isFirstPageOfSession) {
-          sessionStorage.setItem(PLAYED_KEY, '1');
-          curtainOut();
+        if (!booted) {
+          // 首屏(整页加载):独立入场动画,不用幕布
+          booted = true;
           initPage(true);
+          return;
+        }
+        if (curtainPlaying) {
+          curtainPlaying = false;
+          curtainOut();
         } else {
           curtain?.classList.remove('is-animating');
-          initPage(false);
         }
+        initPage(false);
       });
 
       /* ---------------- 主题切换(事件委托,换页不失效) ---------------- */

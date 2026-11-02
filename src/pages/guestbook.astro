@@ -1,21 +1,165 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import GiscusInline from '../components/GiscusInline.astro';
+import { withBase } from '../utils/posts';
+
+const OWNER = 'Ulysses-G-Yang';
+const REPO = 'blog';
+const NEW_TOPIC_URL = `https://github.com/${OWNER}/${REPO}/discussions/new`;
+
+interface Topic {
+  title: string;
+  url: string;
+  author: string;
+  createdAt: string;
+  replies: number;
+  category: string;
+}
+
+// 构建时从 GitHub Discussions 拉取话题(部署环境自动注入 GITHUB_TOKEN;
+// 本地预览没有 token 时优雅降级为提示文案)
+let topics: Topic[] = [];
+let degraded = false;
+
+const token =
+  process.env.GITHUB_TOKEN ?? (import.meta.env as any).GITHUB_TOKEN;
+if (token) {
+  try {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        query: `query($owner:String!,$name:String!){
+          repository(owner:$owner,name:$name){
+            discussions(first:30, orderBy:{field:UPDATED_AT, direction:DESC}){
+              nodes{
+                title url createdAt
+                author{ login }
+                category{ name }
+                comments{ totalCount }
+              }
+            }
+          }
+        }`,
+        variables: { owner: OWNER, name: REPO },
+      }),
+    });
+    const json: any = await res.json();
+    if (json.errors) throw new Error(json.errors[0]?.message ?? 'GraphQL error');
+    const nodes = json?.data?.repository?.discussions?.nodes ?? [];
+    topics = nodes
+      // 文章评论区(giscus 自动创建的 Announcements 讨论串)不算论坛话题
+      .filter((n: any) => n.category?.name !== 'Announcements')
+      .map((n: any) => ({
+        title: n.title,
+        url: n.url,
+        author: n.author?.login ?? 'ghost',
+        createdAt: String(n.createdAt).slice(0, 10),
+        replies: Math.max(0, (n.comments?.totalCount ?? 1) - 1),
+        category: n.category?.name ?? '',
+      }));
+  } catch {
+    degraded = true;
+  }
+} else {
+  degraded = true;
+}
+
+const fmtDate = (iso: string) => iso.replaceAll('-', '.');
 ---
 
-<BaseLayout title="留言板" description="路过的朋友,留个脚印再走吧">
-  <section class="mx-auto max-w-3xl px-5 pt-16 pb-24">
+<BaseLayout title="留言板" description="话题区 + 快速留言:登录 GitHub 就能开新话题、参与讨论">
+  <section class="mx-auto max-w-3xl px-5 pt-16 pb-12">
     <div data-hero>
       <p class="label-mono text-accent">// guestbook</p>
       <h1 class="mt-3 text-4xl font-black tracking-tight">留言板</h1>
       <p class="mt-5 leading-relaxed text-muted">
-        路过的朋友,留个脚印再走吧。技术问题、随手吐槽、问个好看——都可以。
-        评论基于 GitHub Discussions,数据存在仓库里,永不过期。
+        论坛式话题区:登录 GitHub 后可以
+        <strong class="text-text">自己开新话题</strong>,大家跟帖讨论。
+        只想留个脚印?直接拉到最下面的快速评论区。
       </p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <a href={NEW_TOPIC_URL} target="_blank" rel="noopener" class="btn-primary">
+          登录并发布新话题 ↗
+        </a>
+        <a href={withBase('/contribute/')} class="btn-ghost">想发文章?看投稿指南</a>
+      </div>
     </div>
 
-    <div class="mt-12" data-reveal>
-      <GiscusInline />
+    <!-- 话题列表(论坛区) -->
+    <div class="mt-14" data-reveal>
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-lg font-bold">
+          话题列表
+          {topics.length > 0 && <span class="label-mono text-muted">{topics.length}</span>}
+        </h2>
+        <a
+          href={`https://github.com/${OWNER}/${REPO}/discussions`}
+          target="_blank"
+          rel="noopener"
+          class="label-mono text-muted transition-colors hover:text-accent"
+        >
+          在 GitHub 查看 →
+        </a>
+      </div>
+
+      {
+        degraded ? (
+          <div class="mt-5 rounded-2xl border border-border bg-surface p-6 text-sm leading-relaxed text-muted">
+            话题列表在部署环境自动同步(本地预览没有访问令牌,看不到列表)。
+            <a class="text-accent hover:underline" href={`https://github.com/${OWNER}/${REPO}/discussions`} target="_blank" rel="noopener">
+              去 GitHub 看全部话题 →
+            </a>
+          </div>
+        ) : topics.length === 0 ? (
+          <div class="mt-5 rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
+            还没有话题。点上面的按钮,开第一帖!
+          </div>
+        ) : (
+          <ul class="mt-5 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            {topics.map((topic, i) => (
+              <li>
+                <a
+                  href={topic.url}
+                  target="_blank"
+                  rel="noopener"
+                  class="group flex items-center gap-4 p-4 transition-colors hover:bg-bg-soft sm:px-5"
+                >
+                  <span class="label-mono hidden text-muted opacity-60 sm:block">
+                    #{topics.length - i}
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate font-semibold transition-colors group-hover:text-accent">
+                      {topic.title}
+                    </span>
+                    <span class="mt-0.5 block font-mono text-xs text-muted">
+                      @{topic.author} · {fmtDate(topic.createdAt)}
+                      {topic.category && ` · ${topic.category}`}
+                    </span>
+                  </span>
+                  <span class="shrink-0 rounded-full bg-bg-soft px-2.5 py-1 font-mono text-xs text-muted">
+                    💬 {topic.replies}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <!-- 快速留言(保留原留言板) -->
+    <div class="mt-14" data-reveal>
+      <h2 class="text-lg font-bold">快速留言</h2>
+      <p class="mt-2 text-sm text-muted">
+        不想开话题?在这里直接留一句就行。
+      </p>
+      <div class="mt-5">
+        <GiscusInline />
+      </div>
     </div>
   </section>
 </BaseLayout>
