@@ -329,6 +329,27 @@ html.js [data-hero] > * {
 }
 
 /* ============================================================
+   时间线折叠(年 → 月 → 文章)
+   grid-rows 0fr/1fr 过渡实现平滑展开收起,无 JS 动画依赖
+   ============================================================ */
+
+.tl-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+.tl-panel.open {
+  grid-template-rows: 1fr;
+}
+.tl-panel > div {
+  overflow: hidden;
+}
+/* 收起时箭头指向右侧,展开时朝下 */
+.tl-toggle[aria-expanded='false'] .tl-chev {
+  transform: rotate(-90deg);
+}
+
+/* ============================================================
    阅读体验三件套:复制按钮 / 图片灯箱 / 目录高亮
    ============================================================ */
 

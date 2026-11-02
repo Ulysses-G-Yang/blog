@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import TagPill from '../components/TagPill.astro';
+import Timeline from '../components/Timeline.astro';
 import { SITE } from '../config';
 import { getAllTags, sortPostsDesc, withBase } from '../utils/posts';
 
@@ -88,6 +89,13 @@ const tags = getAllTags(posts);
     <div class="mt-6 grid gap-4 sm:grid-cols-2">
       {latest.map((post) => <PostCard post={post} />)}
     </div>
+
+    <!-- 时间线:年 → 月 折叠式梳理 -->
+    {posts.length > 0 && (
+      <div class="mt-16">
+        <Timeline posts={posts} />
+      </div>
+    )}
 
     {
       tags.length > 0 && (

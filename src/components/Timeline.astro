@@ -1,0 +1,122 @@
+---
+import type { Post } from '../utils/posts';
+import { withBase } from '../utils/posts';
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+
+// 年 → 月 → 文章 三层结构(传入前已按时间从新到旧排序)
+const yearMap = new Map<number, Map<number, Post[]>>();
+for (const post of posts) {
+  const y = post.data.pubDate.getFullYear();
+  const m = post.data.pubDate.getMonth() + 1;
+  if (!yearMap.has(y)) yearMap.set(y, new Map());
+  const months = yearMap.get(y)!;
+  if (!months.has(m)) months.set(m, []);
+  months.get(m)!.push(post);
+}
+
+const timeline = [...yearMap.entries()].map(([year, months]) => ({
+  year,
+  total: [...months.values()].reduce((n, list) => n + list.length, 0),
+  months: [...months.entries()].map(([month, list]) => ({ month, list })),
+}));
+---
+
+<section class="mx-auto max-w-5xl px-5" data-reveal>
+  <div class="flex items-end justify-between">
+    <h2 class="text-2xl font-bold">时间线</h2>
+    <a
+      href={withBase('/archive/')}
+      class="label-mono text-muted transition-colors hover:text-accent">完整归档 →</a
+    >
+  </div>
+
+  <div class="mt-4">
+    {
+      timeline.map(({ year, total, months }) => (
+        <div class="border-b border-border">
+          {/* 年份:默认展开 */}
+          <button
+            type="button"
+            class="tl-toggle flex w-full items-center justify-between py-4 text-left"
+            data-target={`tl-y-${year}`}
+            aria-expanded="true"
+          >
+            <span class="font-mono text-xl font-bold">{year}</span>
+            <span class="flex items-center gap-3">
+              <span class="label-mono text-muted">{total} 篇</span>
+              <svg class="tl-chev h-4 w-4 text-muted transition-transform duration-300" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 6 5 5 5-5" />
+              </svg>
+            </span>
+          </button>
+          <div id={`tl-y-${year}`} class="tl-panel open">
+            <div class="overflow-hidden">
+              {months.map(({ month, list }) => (
+                <div class="pl-5">
+                  {/* 月份:默认收起 */}
+                  <button
+                    type="button"
+                    class="tl-toggle flex w-full items-center justify-between border-l-2 border-border py-3 pl-4 text-left transition-colors hover:border-accent"
+                    data-target={`tl-m-${year}-${month}`}
+                    aria-expanded="false"
+                  >
+                    <span class="text-sm font-semibold">{month} 月</span>
+                    <span class="flex items-center gap-3 text-muted">
+                      <span class="font-mono text-xs">{list.length} 篇</span>
+                      <svg class="tl-chev h-3.5 w-3.5 text-muted transition-transform duration-300" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 6 5 5 5-5" />
+                      </svg>
+                    </span>
+                  </button>
+                  <div id={`tl-m-${year}-${month}`} class="tl-panel">
+                    <div class="overflow-hidden">
+                      <ul class="mb-2 ml-4 space-y-1.5 border-l border-border py-1 pl-5">
+                        {list.map((post) => (
+                          <li>
+                            <a
+                              href={withBase(`/blog/${post.id}/`)}
+                              class="group flex items-baseline gap-3"
+                            >
+                              <time
+                                datetime={post.data.pubDate.toISOString()}
+                                class="font-mono text-xs text-muted"
+                              >
+                                {month}.{post.data.pubDate.getDate()}
+                              </time>
+                              <span class="text-sm text-muted transition-colors group-hover:text-accent">
+                                {post.data.title}
+                              </span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // 折叠切换:事件委托,换页不失效
+  document.addEventListener('click', (event) => {
+    const toggle = (event.target as HTMLElement).closest<HTMLElement>(
+      '.tl-toggle',
+    );
+    if (!toggle) return;
+    const panel = document.getElementById(toggle.dataset.target ?? '');
+    if (!panel) return;
+    const open = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+</script>
