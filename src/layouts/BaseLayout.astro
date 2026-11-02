@@ -68,7 +68,9 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
     <ClientRouter />
   </head>
   <body class="flex min-h-screen flex-col bg-bg font-sans text-text antialiased">
-    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="stars"></div>
+    </div>
     <Header />
     <main class="flex-1">
       <slot />
@@ -87,6 +89,45 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches;
+      const finePointer = window.matchMedia(
+        '(hover: hover) and (pointer: fine)',
+      ).matches;
+
+      /* ---------------- 标签页切换彩蛋 ---------------- */
+      const originalTitle = document.title;
+      let titleTimer: ReturnType<typeof setTimeout> | undefined;
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          document.title = '(´･_･`) 去哪了…';
+        } else {
+          document.title = '(◕‿◕) 欢迎回来!';
+          clearTimeout(titleTimer);
+          titleTimer = setTimeout(() => {
+            document.title = originalTitle;
+          }, 1600);
+        }
+      });
+
+      /* ---------------- 跑马灯滚动变速 ---------------- */
+      let marqueeAnims: Animation[] = [];
+      let lastScrollY = window.scrollY;
+      let marqueeRate = 1;
+      gsap.ticker.add(() => {
+        if (!marqueeAnims.length) return;
+        const y = window.scrollY;
+        const v = y - lastScrollY;
+        lastScrollY = y;
+        const target = Math.min(5, Math.max(1, 1 + Math.abs(v) * 0.06));
+        marqueeRate += (target - marqueeRate) * 0.08;
+        if (Math.abs(marqueeRate - 1) < 0.01) marqueeRate = 1;
+        for (const anim of marqueeAnims) {
+          try {
+            anim.playbackRate = marqueeRate;
+          } catch {
+            /* 个别动画不支持 playbackRate,忽略 */
+          }
+        }
+      });
 
       /* ---------------- 幕布转场 ----------------
          原则:动画故障绝不能卡住导航 —— 所有阶段先用 killTweensOf 清场,
@@ -181,6 +222,48 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
       }
 
       function initPage(heroStagger: boolean): void {
+        // 光标环(仅精确指针设备):跟随 + 悬停可交互元素时放大
+        if (finePointer && !reduceMotion) {
+          let ring = document.getElementById('cursor-ring');
+          if (!ring) {
+            ring = document.createElement('div');
+            ring.id = 'cursor-ring';
+            document.body.appendChild(ring);
+          }
+        }
+
+        // 磁性按钮:光标靠近时被轻轻吸住,离开弹回
+        if (finePointer && !reduceMotion) {
+          document
+            .querySelectorAll<HTMLElement>('.btn-primary, .btn-ghost')
+            .forEach((el) => {
+              if (el.dataset.magnetic) return;
+              el.dataset.magnetic = '1';
+              el.addEventListener('mousemove', (e) => {
+                const r = el.getBoundingClientRect();
+                gsap.to(el, {
+                  x: (e.clientX - r.left - r.width / 2) * 0.26,
+                  y: (e.clientY - r.top - r.height / 2) * 0.26,
+                  duration: 0.3,
+                  ease: 'power2.out',
+                });
+              });
+              el.addEventListener('mouseleave', () => {
+                gsap.to(el, {
+                  x: 0,
+                  y: 0,
+                  duration: 0.5,
+                  ease: 'elastic.out(1, 0.45)',
+                });
+              });
+            });
+        }
+
+        // 跑马灯动画列表(滚动变速用)
+        marqueeAnims = document
+          .getAnimations()
+          .filter((a) => a.animationName === 'marquee');
+
         // Hero 逐段渐入:只在会话第一次进入时播放(强叔方案:首次惊艳,之后无感)
         const hero = document.querySelector<HTMLElement>('[data-hero]');
         if (hero && !reduceMotion && heroStagger) {
@@ -255,17 +338,67 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
         syncGiscusTheme();
       }
 
+      /* ---------------- 自定义光标环(跟随 + 悬停放大) ---------------- */
+      if (finePointer && !reduceMotion) {
+        let rx = 0;
+        let ry = 0;
+        let tx = 0;
+        let ty = 0;
+        window.addEventListener(
+          'mousemove',
+          (e) => {
+            tx = e.clientX;
+            ty = e.clientY;
+          },
+          { passive: true },
+        );
+        gsap.ticker.add(() => {
+          rx += (tx - rx) * 0.18;
+          ry += (ty - ry) * 0.18;
+          const ring = document.getElementById('cursor-ring');
+          if (ring) ring.style.transform = `translate(${rx}px, ${ry}px)`;
+        });
+        document.addEventListener('mouseover', (e) => {
+          const ring = document.getElementById('cursor-ring');
+          const hit = (e.target as HTMLElement).closest('a, button');
+          if (ring) {
+            gsap.to(ring, {
+              scale: hit ? 1.7 : 1,
+              duration: 0.25,
+              overwrite: 'auto',
+            });
+          }
+        });
+      }
+
       /* ---------------- 阅读体验增强 ---------------- */
       function enhanceReading(): void {
-        // 1) 代码块复制按钮(已有按钮的跳过,防止重复注入)
-        document.querySelectorAll<HTMLElement>('.astro-code').forEach((pre) => {
-          if (pre.querySelector('.copy-btn')) return;
+        // 1) 代码块 mac 窗口栏 + 复制按钮(跳过已处理的)
+        document.querySelectorAll<HTMLElement>('pre.astro-code').forEach((pre) => {
+          if (pre.dataset.enhanced) return;
+          pre.dataset.enhanced = '1';
+
+          const wrap = document.createElement('div');
+          wrap.className = 'code-wrap';
+          pre.parentNode?.insertBefore(wrap, pre);
+          wrap.appendChild(pre);
+
+          const lang = (pre.dataset.language ?? 'code').toUpperCase();
+          const bar = document.createElement('div');
+          bar.className = 'code-bar';
+          bar.innerHTML =
+            '<span class="dots"><i></i><i></i><i></i></span>' +
+            `<span class="code-lang">${lang}</span>`;
+          wrap.appendChild(bar);
+
           const btn = document.createElement('button');
           btn.className = 'copy-btn';
           btn.type = 'button';
           btn.setAttribute('aria-label', '复制代码');
           btn.textContent = '复制';
-          pre.appendChild(btn);
+          bar.appendChild(btn);
+
+          pre.classList.add('has-bar');
         });
 
         // 2) TOC 滚动高亮:当前阅读的小节在目录里点亮
@@ -311,7 +444,7 @@ const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
 
         const btn = target.closest<HTMLButtonElement>('.copy-btn');
         if (btn) {
-          const code = btn.parentElement?.querySelector('code');
+          const code = btn.closest('.code-wrap')?.querySelector('code');
           const text = code?.innerText ?? '';
           try {
             await navigator.clipboard.writeText(text);

@@ -3,6 +3,8 @@ title: 手搓 GTA5 官网式幕布转场:GSAP + View Transitions
 description: 本站最抢眼的效果——换页时五块幕布落下再穿页而过,文章标题逐段渐入。拆解这套动效的完整实现思路。
 pubDate: 2026-10-30
 tags: [GSAP, 动效, CSS]
+series: 从零搭博客
+seriesOrder: 2
 ---
 
 GTA5 官网的入场动画很有电影感:黑场,然后内容逐段浮现。这篇就拆解本站幕布转场的实现——**GSAP 负责『演』,Astro 的 View Transitions 负责『翻页』**,两者通过约定好的时序配合。

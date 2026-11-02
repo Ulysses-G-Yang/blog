@@ -18,6 +18,10 @@ const blog = defineCollection({
     updatedDate: z.coerce.date().optional(),
     /** 板块:tech = 技术分享,essay = 杂谈随笔 */
     category: z.enum(['tech', 'essay']).default('tech'),
+    /** 系列专栏(可选,同名归为一个系列) */
+    series: z.string().optional(),
+    /** 系列内的序号(可选) */
+    seriesOrder: z.number().optional(),
     /** 标签 */
     tags: z.array(z.string()).default([]),
     /** 草稿:true 时不会发布 */
@@ -25,4 +29,15 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+/** 「本周折腾」短内容:微博式小记,一段话一篇,降低更新门槛 */
+const notes = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/notes' }),
+  schema: z.object({
+    pubDate: z.coerce.date(),
+    /** 心情/标签小字(可选) */
+    mood: z.string().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, notes };

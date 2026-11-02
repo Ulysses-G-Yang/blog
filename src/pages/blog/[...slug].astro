@@ -43,6 +43,20 @@ const next = index > 0 ? sorted[index - 1] : undefined;
           </div>
         )
       }
+      {
+        post.data.series && (
+          <p class="label-mono mt-3 text-accent">
+            系列 · {post.data.series}
+            {post.data.seriesOrder !== undefined && ` · 第 ${post.data.seriesOrder} 篇`}
+            <a
+              href={withBase('/series/')}
+              class="ml-1 text-muted transition-colors hover:text-accent"
+            >
+              (系列目录)
+            </a>
+          </p>
+        )
+      }
       <h1
         class="mt-4 text-3xl leading-tight font-black tracking-tight sm:text-4xl"
       >

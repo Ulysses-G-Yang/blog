@@ -8,9 +8,16 @@ import { withBase } from '../utils/posts';
     class="mx-auto flex max-w-5xl flex-col items-center px-5 pt-24 pb-32 text-center"
     data-hero
   >
-    <p class="font-mono text-8xl font-black tracking-tight select-none sm:text-9xl">
+    <button
+      type="button"
+      id="boom-404"
+      data-text="404"
+      class="glitch font-mono text-8xl font-black tracking-tight select-none sm:text-9xl"
+      aria-label="404(点我有惊喜)"
+      title="点我试试"
+    >
       404
-    </p>
+    </button>
     <h1 class="mt-8 text-2xl font-bold">页面迷路了</h1>
     <p class="mt-3 max-w-md text-muted">
       它可能被移动、删除,或者从来没有存在过。不过没关系,好文章都在下面。
@@ -21,3 +28,40 @@ import { withBase } from '../utils/posts';
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  // 404 彩蛋:点数字迸发一圈玫瑰色粒子(gsap 驱动,播完自动清理)
+  import { gsap } from 'gsap';
+
+  document.addEventListener('click', (event) => {
+    const target = (event.target as HTMLElement).closest('#boom-404');
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const glyphs = ['0', '4', '●', '*', '#'];
+
+    for (let i = 0; i < 36; i++) {
+      const s = document.createElement('span');
+      s.className = 'boom';
+      s.textContent = glyphs[i % glyphs.length];
+      s.style.left = `${cx}px`;
+      s.style.top = `${cy}px`;
+      s.style.fontSize = `${12 + Math.random() * 16}px`;
+      document.body.appendChild(s);
+
+      const angle = (i / 36) * Math.PI * 2;
+      gsap.to(s, {
+        x: Math.cos(angle) * (90 + Math.random() * 170),
+        y: Math.sin(angle) * (90 + Math.random() * 170),
+        opacity: 0,
+        scale: 0.4 + Math.random() * 1.4,
+        rotation: Math.random() * 180 - 90,
+        duration: 0.9 + Math.random() * 0.5,
+        ease: 'power2.out',
+        onComplete: () => s.remove(),
+      });
+    }
+  });
+</script>

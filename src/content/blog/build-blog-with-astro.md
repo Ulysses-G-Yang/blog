@@ -3,6 +3,8 @@ title: 用 Astro 5 + TypeScript 从零搭建一个博客
 description: 内容集合、双主题代码高亮、View Transitions、自动部署——把这套博客的骨架是怎么搭起来的完整记录下来。
 pubDate: 2026-10-29
 tags: [Astro, TypeScript, 教程]
+series: 从零搭博客
+seriesOrder: 1
 ---
 
 这篇文章记录这套博客的骨架搭建过程。选 Astro 的理由很直接:**内容优先、默认零 JS、原生 TypeScript**,而且它的 View Transitions 让页面转场动画变得非常顺滑。

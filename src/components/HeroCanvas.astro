@@ -1,0 +1,128 @@
+---
+// 首页 Hero 交互式粒子背景:玫瑰红粒子 + 连线,鼠标靠近轻微排斥。
+// 仅首页 hero 使用;尊重 prefers-reduced-motion;换页自动销毁;页面不可见/滚出视口时暂停。
+---
+
+<canvas id="hero-canvas" class="pointer-events-none absolute inset-0 -z-10 h-full w-full" aria-hidden="true"></canvas>
+
+<script>
+  function bootHeroCanvas(): void {
+    const canvas = document.getElementById(
+      'hero-canvas',
+    ) as HTMLCanvasElement | null;
+    if (!canvas || canvas.dataset.booted) return;
+    canvas.dataset.booted = '1';
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let w = 0;
+    let h = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const resize = () => {
+      const rect = canvas.parentElement?.getBoundingClientRect();
+      w = rect?.width ?? 0;
+      h = rect?.height ?? 0;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
+    const css = getComputedStyle(document.documentElement);
+    const accent = (css.getPropertyValue('--accent') || '#c25d76').trim();
+    const hex = accent.replace('#', '');
+    const rgb = [
+      parseInt(hex.slice(0, 2), 16) || 194,
+      parseInt(hex.slice(2, 4), 16) || 93,
+      parseInt(hex.slice(4, 6), 16) || 118,
+    ];
+
+    const COUNT = Math.min(90, Math.floor((w * h) / 14000));
+    const pts = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.6 + 0.6,
+    }));
+
+    let mx = -9999;
+    let my = -9999;
+    const trackMouse = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+    };
+    window.addEventListener('mousemove', trackMouse, { passive: true });
+    window.addEventListener('resize', resize, { passive: true });
+
+    let visible = true;
+    let inView = true;
+    document.addEventListener('visibilitychange', () => {
+      visible = !document.hidden;
+    });
+    new IntersectionObserver((entries) => {
+      inView = entries[0]?.isIntersecting ?? true;
+    }).observe(canvas);
+
+    const LINK = 110;
+    const draw = () => {
+      if (!canvas.isConnected) {
+        window.removeEventListener('mousemove', trackMouse);
+        window.removeEventListener('resize', resize);
+        return; // 换页后自动终止
+      }
+      if (visible && inView) {
+        ctx.clearRect(0, 0, w, h);
+
+        for (const p of pts) {
+          const dx = p.x - mx;
+          const dy = p.y - my;
+          const d = Math.hypot(dx, dy);
+          if (d < 120 && d > 0.01) {
+            const f = ((120 - d) / 120) * 0.04;
+            p.vx += (dx / d) * f;
+            p.vy += (dy / d) * f;
+          }
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < -10) p.x = w + 10;
+          if (p.x > w + 10) p.x = -10;
+          if (p.y < -10) p.y = h + 10;
+          if (p.y > h + 10) p.y = -10;
+        }
+
+        ctx.lineWidth = 1;
+        for (let i = 0; i < pts.length; i++) {
+          for (let j = i + 1; j < pts.length; j++) {
+            const a = pts[i];
+            const b = pts[j];
+            const d = Math.hypot(a.x - b.x, a.y - b.y);
+            if (d < LINK) {
+              ctx.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(1 - d / LINK) * 0.22})`;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        for (const p of pts) {
+          ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.75)`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  }
+
+  bootHeroCanvas();
+  document.addEventListener('astro:page-load', bootHeroCanvas);
+</script>
