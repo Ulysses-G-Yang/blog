@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { PROJECTS } from '../data/projects';
 import { SITE } from '../config';
+import { withBase } from '../utils/posts';
 ---
 
 <BaseLayout title="项目" description={`${SITE.author} 的项目展示`}>
@@ -21,6 +22,19 @@ import { SITE } from '../config';
             data-reveal
             class="group flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/60"
           >
+            {
+              project.image && (
+                <div class="-mx-6 -mt-6 mb-4 overflow-hidden rounded-t-2xl border-b border-border">
+                  <img
+                    src={withBase(project.image)}
+                    alt={`${project.name} 配图`}
+                    loading="lazy"
+                    class="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
+              )
+            }
+
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-lg font-bold transition-colors group-hover:text-accent">
                 {project.name}

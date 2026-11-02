@@ -11,11 +11,15 @@ import SearchModal from '../components/SearchModal.astro';
 interface Props {
   title?: string;
   description?: string;
+  /** 每篇文章可传入专属 OG 分享图(完整 URL) */
+  ogImage?: string;
 }
 
-const { title, description = SITE.description } = Astro.props;
+const { title, description = SITE.description, ogImage: ogImageOverride } =
+  Astro.props;
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
-const ogImage = new URL(`${BASE}og.png`, SITE.url).href;
+const ogImage =
+  ogImageOverride ?? new URL(`${BASE}og.png`, SITE.url).href;
 ---
 
 <!doctype html>
