@@ -35,7 +35,10 @@ npm run build
 
 echo "[$(date '+%F %T')] publishing to /out/blog ..."
 mkdir -p /out/blog
-find /out/blog -mindepth 1 -delete
-cp -r dist/. /out/blog/
+# 自定义域名上线后 base 为根路径,dist 结构本身已含 /blog 子目录,
+# 直接发布到 /out 根目录即可同时兼容新旧两种 URL
+mkdir -p /out
+find /out -mindepth 1 -delete
+cp -r dist/. /out/
 
 echo "[$(date '+%F %T')] done at commit $(git rev-parse --short HEAD)"

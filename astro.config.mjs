@@ -3,11 +3,11 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
-// 站点地址:仓库建好后即为 https://<用户名>.github.io,base 对应仓库名 /blog
-// 如果以后换成 <用户名>.github.io 仓库或自定义域名,把 base 改成 '/' 即可
+// 站点地址:自定义域名 ulyssesyang.top(GitHub Pages 绑定后站点部署在根路径)
+// 注意:base 必须与部署路径一致——GitHub Pages 自定义域名 = '/'(根路径)
 export default defineConfig({
-  site: 'https://ulysses-g-yang.github.io',
-  base: '/blog',
+  site: 'https://ulyssesyang.top',
+  base: '/',
   trailingSlash: 'ignore',
   integrations: [sitemap()],
   vite: {
