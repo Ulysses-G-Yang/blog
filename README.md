@@ -1,6 +1,6 @@
 # Ulysses Yang 的技术博客
 
-基于 **Astro 5 + TypeScript + Tailwind CSS 4** 的个人技术博客。设计:深墨紫底 + 玫瑰红点缀(参考 codewebbarcelona.com),超大标题排版、跑马灯、等宽标签,幕布动效每会话只播一次,可切白色主题。双端部署:GitHub Pages(公网)+ 家庭服务器(局域网镜像 + umami 统计)。
+基于 **Astro 5 + TypeScript + Tailwind CSS 4** 的个人技术博客。设计:白色打底 + 玫瑰红点缀、超大标题排版、跑马灯、等宽标签(排版骨架参考 codewebbarcelona.com),幕布动效每会话只播一次,可切深色主题。双端部署:GitHub Pages(公网)+ 家庭服务器(局域网镜像 + umami 统计)。
 
 ## 快速上手
 
@@ -73,25 +73,26 @@ deploy/                    # 家庭服务器部署(docker-compose + nginx + 同�
 ### GitHub Pages(公网,自动)
 
 推送到 `main` → Actions 构建(`.github/workflows/deploy.yml`)→ 发布 Pages。
-线上地址:`https://ulysses-g-yang.github.io/blog/`
+线上地址:**`https://ulyssesyang.top`**(自定义域名;旧地址 `ulysses-g-yang.github.io` 会 301 自动跳转)
 
 ### 家庭服务器(局域网镜像 + umami)
 
 ```bash
-# 在服务器上(192.168.1.33)
+# 在服务器上(局域网 IP,按实际替换)
 mkdir -p ~/blog && cd ~/blog
-# 把 deploy/ 目录里的三个文件传上去(docker-compose.yml / nginx.conf / sync.sh)
+# 把 deploy/ 目录里的文件传上去(docker-compose.yml / nginx.conf / sync.sh)
+cp deploy/.env.example .env && vim .env  # 填入强随机密码(切勿使用示例值)
 docker compose up -d
 ```
 
 之后容器会每 5 分钟自动从 GitHub 拉取最新代码并构建发布:
 
-- 博客镜像:`http://192.168.1.33:8088/blog/`
-- umami 后台:`http://192.168.1.33:3001`(默认 admin / umami,**记得改密码**;然后把统计脚本地址填到 `src/config.ts` 的 `UMAMI` 里重新推送即可接入)
+- 博客镜像:`http://<服务器局域网 IP>:8088/`
+- umami 后台:`http://<服务器局域网 IP>:3001`(凭据在 deploy/.env 中配置;首次登录后请立即在后台修改默认密码,然后把统计脚本地址填到 `src/config.ts` 的 `UMAMI` 里重新推送即可接入)
 
 ## 踩坑记录(重要,改代码前先看)
 
-1. **base 路径**:站点部署在 `/blog/` 子路径,所有内部链接必须走 `withBase()`(`src/utils/posts.ts`);换成 `<用户名>.github.io` 仓库时把 `astro.config.mjs` 的 `base` 改为 `'/'`
+1. **base 路径**:当前自定义域名部署在根路径(`base: '/'`);如迁回 `<用户名>.github.io` 项目站点,改回 `'/blog'` 并保持所有内部链接走 `withBase()`
 2. **换页后元素引用会失效**:View Transitions 换页会替换 body,全局脚本里禁止缓存 DOM 引用(幕布除外,它有 `transition:persist`)
 3. **`<html>` 属性换页会被覆盖**:主题初始化脚本必须带 `data-astro-rerun`
 4. **中文 frontmatter**:值里含英文冒号要加引号,否则 YAML 解析报错

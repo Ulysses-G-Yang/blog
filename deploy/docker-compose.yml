@@ -34,16 +34,17 @@ services:
           sleep "$$INTERVAL";
         done
 
-  # umami 访问统计(端口 3001,默认账号 admin / umami)
+  # umami 访问统计(端口 3001)
+  # 凭据经同目录 .env 注入(参考 .env.example),敏感信息不入仓库
   umami:
     image: ghcr.io/umami-software/umami:postgresql-latest
     restart: unless-stopped
     ports:
       - '3001:3000'
     environment:
-      DATABASE_URL: postgresql://umami:umami_pass_change_me@umami-db:5432/umami
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD:?请在 deploy/.env 中设置 UMAMI_DB_PASSWORD}@umami-db:5432/umami
       DATABASE_TYPE: postgresql
-      APP_SECRET: change-me-to-a-random-string
+      APP_SECRET: ${UMAMI_APP_SECRET:?请在 deploy/.env 中设置 UMAMI_APP_SECRET}
     depends_on:
       - umami-db
 
@@ -53,7 +54,7 @@ services:
     environment:
       POSTGRES_DB: umami
       POSTGRES_USER: umami
-      POSTGRES_PASSWORD: umami_pass_change_me
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD:?请在 deploy/.env 中设置 UMAMI_DB_PASSWORD}
     volumes:
       - umami-db-data:/var/lib/postgresql/data
 
