@@ -20,9 +20,23 @@ const latestNotes = sortPostsDesc(
 /** 去掉 Markdown 符号,取纯文本摘要 */
 const plainText = (s: string, n = 90): string =>
   s.replace(/[#>*`\n]/g, ' ').slice(0, n);
+
+// 结构化数据(SEO/GEO):网站信息
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE.title,
+    alternateName: 'Ulysses Blog',
+    description: SITE.description,
+    url: SITE.url,
+    inLanguage: 'zh-CN',
+    author: { '@type': 'Person', name: SITE.author, url: SITE.github },
+  },
+];
 ---
 
-<BaseLayout>
+<BaseLayout jsonLd={jsonLd}>
   <!-- Hero:大号双色标题(参考 Code Barcelona 的排版骨架) -->
   <section class="relative mx-auto max-w-5xl px-5 pt-20 pb-16 sm:pt-28" data-hero>
     <HeroCanvas />

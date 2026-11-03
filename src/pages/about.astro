@@ -13,9 +13,29 @@ const skills = [
   'Git',
   'Linux',
 ];
+
+// 结构化数据(GEO):作者信息,AI 搜索引用时带权威署名
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: {
+      '@type': 'Person',
+      name: SITE.author,
+      description: '前端学习者 / 学生 / 折腾爱好者',
+      url: SITE.github,
+      email: `mailto:${SITE.email}`,
+      knowsAbout: skills,
+    },
+  },
+];
 ---
 
-<BaseLayout title="关于" description={`关于 ${SITE.author}`}>
+<BaseLayout
+  title="关于"
+  description={`关于 ${SITE.author}`}
+  jsonLd={jsonLd}
+>
   <section class="mx-auto max-w-3xl px-5 pt-16 pb-24">
     <div data-hero>
       <p class="label-mono text-accent">// about me</p>

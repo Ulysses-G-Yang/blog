@@ -7,7 +7,7 @@ import TagPill from '../../components/TagPill.astro';
 import TOC from '../../components/TOC.astro';
 import PrevNext from '../../components/PrevNext.astro';
 import Giscus from '../../components/Giscus.astro';
-import { BASE, readingMinutes, sortPostsDesc, withBase } from '../../utils/posts';
+import { BASE, categoryLabel, readingMinutes, sortPostsDesc, withBase } from '../../utils/posts';
 import { SITE } from '../../config';
 import PostTools from '../../components/PostTools.astro';
 
@@ -34,6 +34,37 @@ const next = index > 0 ? sorted[index - 1] : undefined;
 
 // 每篇文章的专属 OG 分享图(构建时由 satori 生成)
 const ogImage = new URL(`${BASE}og/${post.id}.png`, SITE.url).href;
+
+// 结构化数据(SEO/GEO):文章 + 面包屑
+const publishedISO = post.data.pubDate.toISOString();
+const pageUrl = new URL(Astro.url.pathname, SITE.url).href;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.data.title,
+    description: post.data.description,
+    datePublished: publishedISO,
+    ...(post.data.updatedDate && { dateModified: post.data.updatedDate.toISOString() }),
+    author: { '@type': 'Person', name: SITE.author, url: SITE.github },
+    publisher: { '@type': 'Person', name: SITE.author },
+    image: ogImage,
+    keywords: post.data.tags.join(', '),
+    articleSection: categoryLabel(post.data.category),
+    inLanguage: 'zh-CN',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+    url: pageUrl,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首页', item: `${SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: '博客', item: `${SITE.url}/blog/` },
+      { '@type': 'ListItem', position: 3, name: post.data.title, item: pageUrl },
+    ],
+  },
+];
 ---
 
 <BaseLayout
@@ -41,6 +72,10 @@ const ogImage = new URL(`${BASE}og/${post.id}.png`, SITE.url).href;
   description={post.data.description}
   ogImage={ogImage}
   headerTitle={post.data.title}
+  publishedTime={post.data.pubDate}
+  modifiedTime={post.data.updatedDate}
+  tags={post.data.tags}
+  jsonLd={jsonLd}
 >
   <ReadingProgress />
   <article data-pagefind-body class="mx-auto max-w-5xl px-5 pt-14 pb-24">
