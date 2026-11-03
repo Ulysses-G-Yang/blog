@@ -9,6 +9,8 @@ import PrevNext from '../../components/PrevNext.astro';
 import Giscus from '../../components/Giscus.astro';
 import { BASE, readingMinutes, sortPostsDesc, withBase } from '../../utils/posts';
 import { SITE } from '../../config';
+import PostTools from '../../components/PostTools.astro';
+
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -38,6 +40,7 @@ const ogImage = new URL(`${BASE}og/${post.id}.png`, SITE.url).href;
   title={post.data.title}
   description={post.data.description}
   ogImage={ogImage}
+  headerTitle={post.data.title}
 >
   <ReadingProgress />
   <article data-pagefind-body class="mx-auto max-w-5xl px-5 pt-14 pb-24">
@@ -110,4 +113,7 @@ const ogImage = new URL(`${BASE}og/${post.id}.png`, SITE.url).href;
       <TOC headings={toc} />
     </div>
   </article>
+
+  <!-- 悬浮工具:目录抽屉 + 回顶部(移动端/平板目录缺口补齐) -->
+  <PostTools headings={toc} />
 </BaseLayout>

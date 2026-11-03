@@ -360,6 +360,91 @@ html.js [data-hero] > * {
 }
 
 /* ============================================================
+   悬浮工具:FAB 按钮 + 目录抽屉(移动端/平板的目录缺口补齐)
+   ============================================================ */
+
+.fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 105;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.fab:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.fab-top {
+  bottom: 4.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.fab-top.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+#toc-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  visibility: hidden;
+  transition: visibility 0.3s;
+}
+#toc-drawer.open {
+  visibility: visible;
+}
+#toc-drawer .backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 8, 22, 0.5);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#toc-drawer.open .backdrop {
+  opacity: 1;
+}
+#toc-drawer .sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 72vh;
+  overflow: auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 1.2rem 1.2rem 0 0;
+  padding: 1.1rem 1.2rem 1.6rem;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+#toc-drawer.open .sheet {
+  transform: translateY(0);
+}
+
+/* ============================================================
    暗色主题星尘(仅暗色下渲染)
    ============================================================ */
 

@@ -13,10 +13,16 @@ interface Props {
   description?: string;
   /** 每篇文章可传入专属 OG 分享图(完整 URL) */
   ogImage?: string;
+  /** 阅读模式:顶栏显示文章标题(文章页传入) */
+  headerTitle?: string;
 }
 
-const { title, description = SITE.description, ogImage: ogImageOverride } =
-  Astro.props;
+const {
+  title,
+  description = SITE.description,
+  ogImage: ogImageOverride,
+  headerTitle,
+} = Astro.props;
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 const ogImage =
   ogImageOverride ?? new URL(`${BASE}og.png`, SITE.url).href;
@@ -76,7 +82,7 @@ const ogImage =
     <div class="atmosphere" aria-hidden="true">
       <div class="stars"></div>
     </div>
-    <Header />
+    <Header headerTitle={headerTitle} />
     <main class="flex-1">
       <slot />
     </main>

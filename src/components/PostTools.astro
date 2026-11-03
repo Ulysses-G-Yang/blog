@@ -1,0 +1,126 @@
+---
+interface Heading {
+  depth: number;
+  text: string;
+  slug: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <button
+      type="button"
+      data-open-toc
+      class="fab xl:hidden"
+      aria-label="打开文章目录"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 6h16M4 12h10M4 18h7"></path>
+      </svg>
+    </button>
+  )
+}
+
+<button
+  type="button"
+  data-scroll-top
+  class="fab fab-top"
+  aria-label="回到顶部"
+>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5M5 12l7-7 7 7"></path>
+  </svg>
+</button>
+
+{
+  headings.length > 0 && (
+    <div id="toc-drawer" aria-hidden="true">
+      <div class="backdrop" data-close-toc />
+      <div class="sheet">
+        <div class="mb-4 flex items-center justify-between">
+          <span class="label-mono text-accent">// 目录</span>
+          <button
+            type="button"
+            data-close-toc
+            class="icon-btn"
+            aria-label="关闭目录"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6 6 18M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <ul class="space-y-1">
+          {headings.map((heading) => (
+            <li class:list={[heading.depth === 3 && 'pl-4']}>
+              <a
+                href={`#${heading.slug}`}
+                data-toc-link
+                class="block rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:bg-bg-soft hover:text-accent"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  // 悬浮工具:目录抽屉 + 回顶部(事件委托,换页不失效)
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+
+    if (target.closest('[data-open-toc]')) {
+      document.getElementById('toc-drawer')?.classList.add('open');
+      return;
+    }
+    const closer = target.closest('[data-close-toc]');
+    if (closer || target.closest('#toc-drawer [data-toc-link]')) {
+      document.getElementById('toc-drawer')?.classList.remove('open');
+      if (target.closest('#toc-drawer [data-toc-link]')) {
+        // 点目录项:抽屉先关,锚点跳转照常发生
+        event.preventDefault();
+        const link = target.closest('a');
+        const id = link?.getAttribute('href')?.slice(1);
+        if (id) {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+          history.replaceState(null, '', `#${id}`);
+        }
+      }
+      return;
+    }
+    if (target.closest('[data-scroll-top]')) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      document.getElementById('toc-drawer')?.classList.remove('open');
+    }
+  });
+
+  // 回顶部按钮:滚动超过一屏半才出现
+  let topBtnVisible = false;
+  const updateTopBtn = () => {
+    const btn = document.querySelector('[data-scroll-top]');
+    if (!btn) return;
+    const show = window.scrollY > window.innerHeight * 1.5;
+    if (show !== topBtnVisible) {
+      topBtnVisible = show;
+      btn.classList.toggle('show', show);
+    }
+  };
+  window.addEventListener('scroll', updateTopBtn, { passive: true });
+  document.addEventListener('astro:page-load', updateTopBtn);
+</script>
