@@ -374,6 +374,37 @@ const ogImage =
             });
           }
         });
+
+        // 指针进入 iframe(giscus 等跨域嵌入)或离开窗口时隐藏光标环:
+        // 跨域 iframe 内部父页面收不到 mousemove,不隐藏的话圆环会冻结在边界上
+        const hideRing = () =>
+          document
+            .getElementById('cursor-ring')
+            ?.classList.add('ring-hidden');
+        const showRing = () =>
+          document
+            .getElementById('cursor-ring')
+            ?.classList.remove('ring-hidden');
+
+        document.documentElement.addEventListener('mouseleave', hideRing);
+        document.documentElement.addEventListener('mouseenter', showRing);
+
+        const scanIframes = () =>
+          document
+            .querySelectorAll<HTMLIFrameElement>(
+              'iframe:not([data-ring-watch])',
+            )
+            .forEach((f) => {
+              f.dataset.ringWatch = '1';
+              f.addEventListener('mouseenter', hideRing);
+              f.addEventListener('mouseleave', showRing);
+            });
+        scanIframes();
+        // giscus 的 iframe 是懒加载的,晚于页面出现——监听 DOM 变化,出现即接管
+        new MutationObserver(scanIframes).observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
       }
 
       /* ---------------- 阅读体验增强 ---------------- */

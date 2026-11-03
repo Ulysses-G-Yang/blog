@@ -349,6 +349,10 @@ html.js [data-hero] > * {
   z-index: 140;
   opacity: 0.7;
 }
+/* 指针进入跨域 iframe(giscus 等)或离开窗口时隐藏 */
+#cursor-ring.ring-hidden {
+  opacity: 0 !important;
+}
 @media (hover: none), (pointer: coarse) {
   #cursor-ring {
     display: none;
