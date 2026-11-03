@@ -10,7 +10,7 @@ export const SITE = {
   /** 作者名 */
   author: 'Ulysses Yang',
   /** 你的 GitHub 主页(页脚、关于页都会用到) */
-  url: 'https://ulysses-g-yang.github.io',
+  url: 'https://ulyssesyang.top',
   github: 'https://github.com/Ulysses-G-Yang',
   /** 联系邮箱(展示在关于页,不需要可留空) */
   email: '3023345758@qq.com',
