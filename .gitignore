@@ -21,3 +21,5 @@ Thumbs.db
 .zcode/
 .fonts/
 drafts/
+ops/publish.log
+ops/health.log
