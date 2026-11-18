@@ -22,7 +22,7 @@ export const PROJECTS: Project[] = [
       'Astro 5 + TypeScript 手搓的个人博客:幕布转场(每会话只播一次)、双主题、粒子背景、pagefind 离线搜索、板块化内容,以及 GitHub Pages + 家庭服务器的双端自动部署。你正在看的就是它。',
     stack: ['Astro', 'TypeScript', 'Tailwind CSS', 'GSAP', 'Docker'],
     image: '/projects/blog-home.png',
-    link: 'https://ulysses-g-yang.github.io/blog/',
+    link: 'https://ulyssesyang.top',
     repo: 'https://github.com/Ulysses-G-Yang/blog',
     year: '2026',
     status: '持续迭代',

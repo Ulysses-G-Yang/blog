@@ -10,6 +10,8 @@ export const GET: APIRoute = async () => {
   );
   const origin = new URL(SITE.url).origin;
 
+  const feedSelfUrl = new URL('feed.xml', new URL(import.meta.env.BASE_URL, origin)).href;
+
   return rss({
     title: SITE.title,
     description: SITE.description,
@@ -23,6 +25,10 @@ export const GET: APIRoute = async () => {
         origin,
       ).href,
     })),
-    customData: '<language>zh-CN</language>',
+    customData: [
+      '<language>zh-CN</language>',
+      `<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
+      `<atom:link href="${feedSelfUrl}" rel="self" type="application/rss+xml" xmlns:atom="http://www.w3.org/2005/Atom"/>`,
+    ].join(''),
   });
 };

@@ -24,7 +24,6 @@ const jsonLd = [
       name: SITE.author,
       description: '前端学习者 / 学生 / 折腾爱好者',
       url: SITE.github,
-      email: `mailto:${SITE.email}`,
       knowsAbout: skills,
     },
   },
@@ -98,7 +97,17 @@ const jsonLd = [
           class="btn-ghost">GitHub ↗</a
         >
         <a href={withBase('/feed.xml')} class="btn-ghost">RSS 订阅</a>
-        <a href={`mailto:${SITE.email}`} class="btn-ghost">Email</a>
+        <button id="about-mail" class="btn-ghost" type="button">Email</button>
+        <script is:inline>
+          (function () {
+            var addr = ['3023345758', 'qq.com'].join('@');
+            var el = document.getElementById("about-mail");
+            el.textContent = addr;
+            el.addEventListener("click", function () {
+              window.location.href = "mailto:" + addr;
+            });
+          })();
+        </script>
       </div>
     </div>
 
