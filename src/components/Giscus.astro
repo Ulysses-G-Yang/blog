@@ -1,5 +1,6 @@
 ---
 import { GISCUS } from '../config';
+import { SITE } from '../config';
 
 // giscus 评论:配置补全(repoId / categoryId)前不渲染,页面不报错
 const enabled = Boolean(GISCUS.repo && GISCUS.repoId && GISCUS.categoryId);
@@ -28,6 +29,15 @@ const enabled = Boolean(GISCUS.repo && GISCUS.repoId && GISCUS.categoryId);
         crossorigin="anonymous"
         async
       />
+      <p class="mt-4 text-sm text-muted">
+        没有 GitHub 账号?也可以
+        <a
+          href={`mailto:${SITE.email}?subject=${encodeURIComponent('博客留言')}`}
+          class="text-accent hover:underline"
+        >
+          邮件联系我
+        </a>。
+      </p>
     </section>
   )
 }
