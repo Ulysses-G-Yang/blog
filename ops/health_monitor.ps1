@@ -1,50 +1,31 @@
-﻿# 网站健康监控:每 10 分钟检查公网站点 + 家服镜像
-# 连续 3 次失败 → 弹窗提醒;全程写日志备查
+﻿# 网站健康检查(手动诊断工具,非定时任务)
+# 强制直连检测(绕过系统代理/梯子),测量网站真实可达性;绝不弹窗
 $ErrorActionPreference = "Continue"
 $root = "E:\blog"
 $log = "$root\ops\health.log"
-$stateFile = "$root\ops\fail_count.txt"
-$sites = @(
-    @{ name = "公网站点"; url = "https://ulyssesyang.top/" },
-    @{ name = "本地预览"; url = "http://localhost:4399/blog/" }
-)
+$url = "https://ulyssesyang.top/"
 
-function Log($msg) {
-    $stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Add-Content -Path $log -Value "[$stamp] $msg" -Encoding UTF8
-}
-
-foreach ($site in $sites) {
-    $ok = $false
+function Test-Direct($target) {
     try {
-        $r = Invoke-WebRequest -Uri $site.url -UseBasicParsing -TimeoutSec 20
-        $ok = ($r.StatusCode -eq 200)
+        $req = [System.Net.HttpWebRequest]::Create($target)
+        $req.Proxy = $null            # 关键:绕过系统代理(梯子),测真实可达性
+        $req.Timeout = 15000
+        $req.UserAgent = "blog-health-monitor"
+        $resp = $req.GetResponse()
+        $code = [int]$resp.StatusCode
+        $resp.Close()
+        return ($code -eq 200)
     } catch {
-        $ok = $false
-    }
-
-    $countFile = "$root\ops\fail_$($site.name -replace '\s','').txt"
-    if ($ok) {
-        $prev = 0
-        if (Test-Path $countFile) { $prev = [int](Get-Content $countFile -Raw) }
-        if ($prev -gt 0) { Log "$($site.name): 恢复正常(此前连续失败 $prev 次)" }
-        Set-Content $countFile "0"
-    } else {
-        $prev = 0
-        if (Test-Path $countFile) { $prev = [int](Get-Content $countFile -Raw) }
-        $now = $prev + 1
-        Set-Content $countFile "$now"
-        Log "$($site.name): 连续第 $now 次失败"
-
-        # 公网站点连续 3 次失败 → 弹窗提醒
-        if ($now -ge 3 -and $site.name -eq "公网站点") {
-            Add-Type -AssemblyName System.Windows.Forms
-            [System.Windows.Forms.MessageBox]::Show(
-                "你的博客网站连续 $now 次无法访问!`n`n请检查网络/GitHub 状态,或联系 AI 协助排查。",
-                "网站告警", "OK", "Warning") | Out-Null
-            Set-Content $countFile "0"  # 弹窗只提醒一次,重置计数
-        }
+        return $false
     }
 }
 
-Log "===== 本轮监控结束 ====="
+$stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+if (Test-Direct $url) {
+    Add-Content -Path $log -Value "[$stamp] 公网站点直连 200 OK" -Encoding UTF8
+    Write-Host "公网站点直连: 200 OK"
+    exit 0
+}
+Add-Content -Path $log -Value "[$stamp] 公网站点直连失败(已绕过代理,属真实可达性问题)" -Encoding UTF8
+Write-Host "公网站点直连失败"
+exit 1
