@@ -23,3 +23,5 @@ Thumbs.db
 drafts/
 ops/publish.log
 ops/health.log
+agent/
+ops/fail_*.txt
