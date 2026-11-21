@@ -1,0 +1,80 @@
+# 新文章合入 src/content/blog/ 时的分发自动化:
+# ① 检测本次推送新增/修改的文章
+# ② 在 Actions 摘要生成"发布清单"——GSC 检查链接 + 各平台文案骨架
+# ③ 通过 IndexNow 协议通知 Bing 等搜索引擎(加速收录)
+name: 发布分发助手
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/blog/**'
+
+permissions:
+  contents: read
+
+jobs:
+  distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # 需要与上一次提交对比以发现新增文章
+
+      - name: 找出新增/修改的文章
+        id: detect
+        run: |
+          PREV="${{ github.event.before }}"
+          if [ -z "$PREV" ] || [ "$PREV" = "0000000000000000000000000000000000000000" ]; then
+            PREV="HEAD~1"
+          fi
+          {
+            echo "files<<EOF"
+            git diff --name-only --diff-filter=AM "$PREV" HEAD -- 'src/content/blog/*.md' | grep -v draft-demo || true
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 生成分发清单(Actions 摘要)
+        if: steps.detect.outputs.files != ''
+        env:
+          FILES: ${{ steps.detect.outputs.files }}
+        run: |
+          {
+            echo "## 📢 本次发布的新文章"
+            echo ""
+            while IFS= read -r f; do
+              slug=$(basename "$f" .md)
+              url="https://ulyssesyang.top/blog/${slug}/"
+              echo "- [${slug}](${url})"
+              echo "  - [GSC 网址检查 → 请求编入索引](https://search.google.com/search-console/inspect?resource_id=sc-domain%3Aulyssesyang.top&id=${url})"
+              echo "  - 掘金骨架:《${slug} — 技术实现与踩坑》"
+              echo "  - 知乎骨架:找相关问题,「踩坑 + 方法论」结构回答,结尾链回原文"
+              echo "  - 小红书骨架:emoji 短句版,tag 用 #前端 #建站 #博客"
+              echo ""
+            done
+            echo "### 标准分发动作"
+            echo "1. ✅ GSC 网址检查(链接已生成,点击即达)"
+            echo "2. ✅ IndexNow 自动提交(Bing 等搜索引擎)"
+            echo "3. ⬜ 掘金发一版,结尾链回原文"
+            echo "4. ⬜ 知乎找相关问题写回答引流"
+            echo "5. ⬜ 发即刻/小红书动态附链接"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: IndexNow 提交(Bing 等搜索引擎)
+        if: steps.detect.outputs.files != ''
+        env:
+          FILES: ${{ steps.detect.outputs.files }}
+        run: |
+          URLS=""
+          while IFS= read -r f; do
+            slug=$(basename "$f" .md)
+            URLS="${URLS}\"https://ulyssesyang.top/blog/${slug}/\","
+          done <<EOF
+          $FILES
+          EOF
+          URL_LIST="[${URLS%,}]"
+          BODY="{\"host\":\"ulyssesyang.top\",\"key\":\"1bc1bc9e1a84a1e3a8f16b44d2126974\",\"urlList\":${URL_LIST}}"
+          curl -s -m 15 -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "$BODY" -o /dev/null -w "IndexNow: %{http_code}\n" || echo "IndexNow 提交失败(非关键,不影响上线)"
