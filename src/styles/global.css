@@ -293,6 +293,16 @@ html.js [data-hero] > * {
   border-radius: 0.8rem;
 }
 
+/* 插图图注:统一 label-mono 小号等宽标签风 */
+.prose-blog :where(figure) {
+  margin-block: 1.75rem;
+}
+.prose-blog :where(figcaption) {
+  @apply mt-2 font-mono text-xs uppercase text-muted;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+}
+
 /* 行内代码:去掉默认反引号底色,换成胶囊样式 */
 .prose-blog :where(code):not(:where(pre code))::before,
 .prose-blog :where(code):not(:where(pre code))::after {

@@ -4,6 +4,7 @@ import { PROJECTS } from '../data/projects';
 import { SITE } from '../config';
 import { REPOS } from '../data/repos';
 import { withBase } from '../utils/posts';
+import AfterHours from '../components/AfterHours.astro';
 ---
 
 <BaseLayout title="项目" description={`${SITE.author} 的项目展示`}>
@@ -21,7 +22,7 @@ import { withBase } from '../utils/posts';
         PROJECTS.map((project) => (
           <article
             data-reveal
-            class="group flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/60"
+            class="group flex flex-col rounded-2xl border border-border bg-surface p-6 transition-all duration-150 hover:-translate-y-1 hover:border-accent/60"
           >
             {
               project.image && (
@@ -90,6 +91,9 @@ import { withBase } from '../utils/posts';
         ))
       }
     </div>
+
+    <!-- 特种纸夹页:After Hours · 纸上微醺(项目页重点展示) -->
+    <AfterHours compact />
 
     <!-- 全部开源仓库:诚实版,包括 fork 与一眼失败品的练手作 -->
     <section class="mt-20" data-reveal>
