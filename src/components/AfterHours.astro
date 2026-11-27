@@ -96,7 +96,7 @@ const { compact = false } = Astro.props;
                 Crema e Baffi Bar
               </h2>
               <p class="mt-1 text-sm leading-relaxed text-[#6f6960]">
-                奶油胡子——成都红星路一间朋友的清吧。菜单不长,但每一杯都有出处。
+                奶油胡子——成都红星路一间朋友的清吧。菜单不长，但每一杯都有出处。
               </p>
             </div>
           </div>
@@ -151,25 +151,35 @@ const { compact = false } = Astro.props;
             调酒风味图谱
           </h2>
           <p class="mt-1 text-sm leading-relaxed text-[#6f6960]">
-            手稿印刷风的静态知识库:食材共现、分子共香与酒谱命中在同一屏里即时重算。
-            选一枚风味切片,直接带着配方跳进去。
+            手稿印刷风的静态知识库：食材共现、分子共香与酒谱命中在同一屏里即时重算。选一枚风味切片，直接带着配方跳进去。
           </p>
         </div>
 
-        <div class="mt-6 flex flex-wrap gap-2">
+        <div class="mt-6 grid gap-2 sm:grid-cols-2">
           {
-            flavors.map((f) => (
+            flavors.map((f, i) => (
               <a
                 href={`${KB_URL}?selected=${encodeURIComponent(f.query)}`}
                 target="_blank"
                 rel="noopener"
-                class="group inline-flex items-baseline gap-2 border border-[#1c1b18]/30 bg-white px-3 py-1.5 transition-colors duration-150 hover:border-[#b3362d]"
+                class="group relative flex items-baseline gap-2 border border-[#1c1b18]/25 bg-white py-2 pr-8 pl-2.5 transition-colors duration-150 hover:border-[#b3362d] hover:bg-[#fdfbf7]"
               >
-                <span class="text-[13px] font-medium text-[#1c1b18] group-hover:text-[#b3362d]">
-                  {f.label}
+                <span class="font-mono text-[9px] tracking-[0.14em] text-[#b3aa9c] transition-colors group-hover:text-[#b3362d]">
+                  {String(i + 1).padStart(2, '0')}
                 </span>
-                <span class="font-mono text-[9px] tracking-[0.12em] text-[#9a9286]">
-                  {f.note}
+                <span class="min-w-0">
+                  <span class="block truncate text-[13px] font-medium text-[#1c1b18] group-hover:text-[#b3362d]">
+                    {f.label}
+                  </span>
+                  <span class="mt-0.5 block truncate font-mono text-[9px] tracking-[0.1em] text-[#9a9286]">
+                    {f.note}
+                  </span>
+                </span>
+                <span
+                  class="absolute top-1.5 right-2 font-mono text-[10px] leading-none text-[#b3aa9c] transition-colors group-hover:text-[#b3362d]"
+                  aria-hidden="true"
+                >
+                  ↗
                 </span>
               </a>
             ))
